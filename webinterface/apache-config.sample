@@ -1,0 +1,25 @@
+<VirtualHost @@hostname@@:80>
+    ServerAdmin mail@admin
+    DocumentRoot  @@path to vermont_web@@
+    ServerName @@server hostname + full domain@@
+    Options FollowSymLinks
+
+    SetEnv PYTHON_EGG_CACHE "/tmp"
+
+    <Directory />
+        AllowOverride All
+        Order Allow,Deny
+        Allow from all
+		# basic authentication with insecure user/password stored in file
+        AuthBasicProvider file 
+        AuthUserFile /var/www/prismpp/trunk/.htpasswd
+        AuthName "Vermont_Web"
+        AuthType Basic
+        Require valid-user
+
+        AddHandler cgi-script .cgi .py
+        Options +ExecCGI
+    </Directory>
+
+</VirtualHost>
+

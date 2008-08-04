@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type"/><title>PRISM - Correlation manager</title>
+    <link type="text/css" href="templates/css/menu.css" rel="stylesheet"/>
+    <link type="text/css" href="templates/css/template.css" rel="stylesheet"/>
+    <link type="text/css" href="templates/css/tab.css" rel="stylesheet"/>
+    <link type="text/css" href="templates/css/sensor.css" rel="stylesheet"/>
+    <script type="text/javascript" src="templates/js/menu.js" language="JavaScript" />
+    <script type="text/javascript" src="templates/js/menu_theme.js" language="JavaScript" />
+    <script type="text/javascript" src="templates/js/tab.js" language="JavaScript" />
+    <script type="text/javascript" src="templates/js/admin.js" language="JavaScript" />
+    <script type="text/javascript">
+        function pageNav(limitStart) {
+            document.navForm.limitstart.value = limitStart;
+            document.navForm.submit();
+        }
+        function popup(winname,wintitel,breite,hoehe) {
+            var links=screen.width/2-breite/2;
+            var oben=screen.height/2-hoehe/2;
+            NewWin = window.open(winname, wintitel, "width=" +breite+",height="+hoehe+",top="+oben+",left="+links+",scrollbars=yes,resizable= yes");
+        }
+    </script>
+</head>
+
+<body>
+<div class="header">
+    <img alt="RRZE IDS Logo" src="templates/images/header_text.png"/>
+</div>
+
+<table style="margin-top: 1px;" class="menubar">
+    <tbody><tr>
+    <td nowrap="" class="menubackgr">
+    <div class="pathway"><strong>VERMONT</strong> / Management Interface</div>    
+    </td>
+    <td width="100%" align="right" class="menubackgr">
+    </td>
+    </tr>
+    </tbody>
+</table>
+<table class="adminheading">
+	<tr height="100pt"><td>$title</td></tr>
+</table>
+
+<div align="center">
+

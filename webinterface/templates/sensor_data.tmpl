@@ -1,0 +1,35 @@
+#include $workdir+"/templates/header.tmpl"
+
+<table class="adminlist">
+<tr>
+	<td colspan="2"><a href="start.py">Back to Vermont instance list</a></td>
+</tr>	
+<tr>
+	<th width="10%" class="title">Host:</th>
+	<td>$vi.host</td>
+</tr>
+<tr>
+	<th width="10%" class="title">Sensor data:</th>
+	<td rowspan="2">
+$stat
+	</td>
+</tr>
+<tr>
+	<td></td>
+</tr>	
+<tr>
+	<th width="20px" class="title">Raw sensor data:</th>
+	<td rowspan="2">
+$xml
+	</td>
+</tr>
+<tr>
+	<td></td>
+</tr>	
+<tr>
+	<td colspan="2"><a href="start.py">Back to Vermont instance list</a></td>
+</tr>	
+</table>
+
+
+#include $workdir+"/templates/footer.tmpl"

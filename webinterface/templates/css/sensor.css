@@ -1,0 +1,65 @@
+table.sensorDataTable {
+	font-family: Helvetica,Arial,sans-serif;
+	font-size: 99%;
+}
+
+table.addinfotable {
+	font-size: 95%;
+	border:none;
+	vertical-align:top;
+}
+td.addinfotable, th.addinfotable, tr.addinfotable {
+	border:none;
+	vertical-align:top;
+	padding:2px;
+}
+table.threadtable {
+	font-size: 95%;
+	border:none;
+	vertical-align:top;
+}
+td.threadtable, th.threadtable, tr.threadtable {
+	border:none;
+	vertical-align:top;
+	padding:2px;
+}
+
+table.adminlist table.sensorDataTable th {
+	background: none;
+	color: #000000;
+}
+
+table.sensorDataTable td, th {
+	#border-left: 1px solid;
+	#border-right: 1px solid;
+	vertical-align:top;
+	padding:2px;
+	border-bottom: 0px;
+}
+
+td.tcontainer {
+	padding:0px;
+}
+
+table.sensorDataTable tr {
+	border-top: 1px solid;
+	border-bottom: 1px solid;
+}
+
+div.addinfoheader {
+	font-weight:bold;
+}
+
+
+table.inner {
+	width:100%;
+	border:none;
+}
+
+table.sensorDataTable td img {
+	text-align:center;
+}
+
+pre.sensorData {
+	font-size: 80%;
+}

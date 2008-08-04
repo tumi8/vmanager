@@ -1,0 +1,23 @@
+#include $workdir+"/templates/header.tmpl"
+
+<table class="adminlist">
+<tr>
+	<th width="10%" class="title">Host:</th>
+	<td>$vi.host</td>
+</tr>
+<tr>
+	<th width="10%" class="title">Log data:</th>
+	<td rowspan="2">
+	$log
+	</td>
+</tr>
+<tr>
+	<td></td>
+</tr>	
+<tr>
+	<td colspan="2"><a href="start.py">Back to Vermont instance list</a></td>
+</tr>	
+</table>
+
+
+#include $workdir+"/templates/footer.tmpl"

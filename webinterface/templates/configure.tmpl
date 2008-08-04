@@ -1,0 +1,28 @@
+#include $workdir+"/templates/header.tmpl"
+
+<table class="adminlist">
+<tr>
+	<th width="10%" class="title">Host:</th>
+	<td>$vi.host</td>
+</tr>
+<tr>
+	<th width="10%" class="title">Configuration:</th>
+	<td rowspan="2">
+		<form action="start.py" method="post">
+			<input type="hidden" name="vi_host" value="$vi.host" />
+			<input type="hidden" name="action" value="configure" />
+			<textarea name="cfgtext" cols=100 rows="30">$vi.cfgtext</textarea><br>
+			<input type="submit" name="Save" value="Save" />
+		</form>
+	</td>
+</tr>
+<tr>
+	<td></td>
+</tr>	
+<tr>
+	<td colspan="2"><a href="start.py">Back to Vermont instance list</a></td>
+</tr>	
+</table>
+
+
+#include $workdir+"/templates/footer.tmpl"

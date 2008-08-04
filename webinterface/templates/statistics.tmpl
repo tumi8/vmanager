@@ -1,0 +1,28 @@
+#include $workdir+"/templates/header.tmpl"
+
+<table class="adminlist">
+<tr>
+	<td colspan="2"><a href="start.py">Back to Vermont instance list</a></td>
+</tr>	
+<tr>
+<th width="10%" class="title">Statistics:</th>
+</tr>
+#for $s in $stats	
+  <tr>
+    <td>
+	  <table>
+	    <tr><td>$s['name']</td></tr>
+		<tr>
+		  <td><img src="start.py?vi_host=$vi.host&action=statimg&idx1=$s['idx']&idx2=0" /></td>
+		  <td><img src="start.py?vi_host=$vi.host&action=statimg&idx1=$s['idx']&idx2=1" /></td>
+		</tr>
+	<!--	<tr><td><img src="start.py?vi_host=$vi.host&action=statimg&idx1=$s['idx']&idx2=2" /></td></tr>-->
+	  </table>
+    <td>
+#end for
+<tr>
+	<td colspan="2"><a href="start.py">Back to Vermont instance list</a></td>
+</tr>	
+</table>
+
+#include $workdir+"/templates/footer.tmpl"

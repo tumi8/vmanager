@@ -1,0 +1,30 @@
+#include $workdir+"/templates/header.tmpl"
+
+<table class="adminlist">
+<tr>
+<th width="10%" class="title">Host</th>
+<th width="10%" class="title">Status</th>
+<th width="10%" class="title">Manage</th>
+</tr>
+#for $vi in $vinstances
+  <tr>
+    <td>$vi.host</td>
+    <td>
+		$vi.status
+    </td>
+    <td>
+#if not $vi.status.startswith("error")
+		<a href="start.py?vi_host=$vi.host&action=configure" title="Configure">Configure</a><br />
+		<a href="start.py?vi_host=$vi.host&action=sensor_data" title="Show sensor data">Sensor data</a><br />
+		<a href="start.py?vi_host=$vi.host&action=statistics" title="Show statistics">Statistics</a><br />
+		<a href="start.py?vi_host=$vi.host&action=logfile" title="Show log">Show log</a><br />
+		<a href="start.py?vi_host=$vi.host&action=reload" title="Reload">Reload</a> /
+		<a href="start.py?vi_host=$vi.host&action=start" title="Start">Start</a> /
+		<a href="start.py?vi_host=$vi.host&action=stop" title="Stop">Stop</a>
+#end if
+    </td>
+  </tr>
+#end for
+</table>
+
+#include $workdir+"/templates/footer.tmpl"

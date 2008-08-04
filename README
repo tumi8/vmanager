@@ -1,1 +1,4 @@
-Vermont - Manager
+Subdirectories:
+
+/manager: Python program that controls a running instance of Vermont
+/webinterface: Webinterface for Apache mod_python that manages multiple Vermont instances and uses helper application in /manager
