@@ -157,7 +157,7 @@ class LocalVermontInstance(VermontInstance):
             except:
                 logger().error(traceback.format_exc())
             sys.stderr.write("Problem starting Vermont, exiting forked process ...\n")
-            sys.exit(2)
+            os._exit(1)
         else:
             logger().debug("PID of started vermont: %d" % pid)
             self.pid = pid
