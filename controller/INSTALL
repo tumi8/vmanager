@@ -5,7 +5,6 @@ Installation / Run procedure: (Tobias Limmer, 23.4.2008)
    - python-pydot
    - graphviz (for program dot)
    - rrdtool
-   - pyro
 * copy files vermont_manager.py and vermont_manager.conf to server where Vermont instance runs
 * edit content of file vermont_manager.conf
 * start Vermont Manager by calling "python vermont_manager.py <config-file>", i.e.
