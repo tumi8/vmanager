@@ -1,4 +1,5 @@
 
+from VermontLogger import logger
 
 class VermontSensor:
     
@@ -29,12 +30,16 @@ class VermontSensor:
         """
         @param xml: sensor data as parsed xml object
         """
-        v = self.vinstance.sensorDataXml.xpath(self.dataXPath)
-        activate = False
-        if (self.activation=="positive") and (v>=self.threshold):
-            activate = True
-        if (self.activation=="negative") and (v<=self.threshold):
-            activate = True
-        print "sensor id=%s senses value=%s" % (self.id, v)
-        for a in self.actors:
-            a.trigger(activate)
+        # only activate sensor if Vermont instance is running
+        if self.vinstance.running:
+            v = self.vinstance.sensorDataXml.xpath(self.dataXPath)
+            activate = False
+            if (self.activation=="positive") and (v>=self.threshold):
+                activate = True
+            if (self.activation=="negative") and (v<=self.threshold):
+                activate = True
+            logger().info("sensor id=%s senses value=%s" % (self.id, v))
+            for a in self.actors:
+                a.trigger(activate)
+        else:
+            logger().debug("Vermont not running for sensor id=%s" % self.id)

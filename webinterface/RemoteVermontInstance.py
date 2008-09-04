@@ -18,7 +18,9 @@
 
 import xmlrpclib
 import re
+
 from VermontInstance import VermontInstance
+from VermontLogger import logger
 
 
 class RemoteVermontInstance(VermontInstance):
@@ -35,33 +37,38 @@ class RemoteVermontInstance(VermontInstance):
         VermontInstance.__init__(self, parsexml)
         self.url = url
         self.online = False
-        self._conn = xmlrpclib.ServerProxy(url, allow_none=1)
+        self._conn = xmlrpclib.ServerProxy(url, None, None, 1, 1)
         self.host = re.match("http://(.*)[:/$]", url).group(1)
         self.retrieveStatus()
         if self.online:
             self.retrieveConfig()
+        
+        
+    def __str__(self):
+        return "<remote at host '%s', url '%s'>" % (self.host, self.url)
 
 
     def retrieveStatus(self):
         try:
             self._conn.retrieveStatus()
-            self.running = self._conn.running
+            self.running = self._conn.getRunning()
             self.online = True
             self.status = ["stopped", "running"][self.running]
         except Exception ,e: #IGNORE:W0703
             self.online = False
             self.running = False
-            self.status = "manager not found on host (%s)" % e
+            self.status = "error: manager not found on host (%s)" % e
     
 
     def _retrieveConfig(self):
         self._conn.retrieveConfig()
-        return self._conn.cfgText
+        return self._conn.getCfgText()
 
 
     def _retrieveSensorData(self):
+        logger().debug("RemoteVermontInstance._retrieveSensorData()")
         self._conn.retrieveSensorData()
-        return self._conn.sensorDataText
+        return self._conn.getSensorDataText()
             
             
     def _transmitConfig(self):
@@ -71,15 +78,15 @@ class RemoteVermontInstance(VermontInstance):
         
         
     def _transmitDynConfig(self):
-        self._conn.dynCfgText = self.dynCfgText
-        self._conn.dynCfgModified = True
+        self._conn.setDynCfgText(self.dynCfgText)
+        self._conn.setDynCfgModified(True)
         self._conn.syncConfig()
         self.dynCfgModified = False
         
         
     def retrieveLog(self):
         self._conn.retrieveLog()
-        self.logText = self._conn.logText
+        self.logText = self._conn.getLogText()
         
         
     def reload(self):
@@ -92,3 +99,10 @@ class RemoteVermontInstance(VermontInstance):
         
     def stop(self):
         self._conn.stop()
+        
+        
+    def getGraph(self, idx1, idx2):
+        return self._conn.getGraph(idx1, idx2)
+
+    def getGraphList(self):
+        return self._conn.getGraphList()

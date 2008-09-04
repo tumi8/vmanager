@@ -12,7 +12,6 @@ import re
 from Ft.Xml.Domlette import NonvalidatingReader
 import os
 import base64
-from mod_python import apache
 
 workdir = os.path.dirname(__file__)
 sys.path.insert(0, workdir)
@@ -42,46 +41,43 @@ def show_error(req, error):
 
 
 def perform_start(req, instance):
-    if instance.conn.get_config()=="":
-        return show_error(req, "no configuration was set for this Vermont instance!")
-    instance.conn.start()
+    instance.start()
     
     return show_instance_list(req)
 
 
 def perform_stop(req, instance):
-    if instance.conn.get_config()=="":
-        return show_error(req, "no configuration was set for this Vermont instance!")
-    if not instance.conn.stop():
-        return show_error(req, "failed to stop Vermont instance on host %s" % instance.host)
+    instance.stop()
     
     return show_instance_list(req)
     
 
 def perform_reload(req, instance):
-    if instance.conn.get_config()=="":
-        return show_error(req, "no configuration was set for this Vermont instance!")
-    instance.conn.reload()
+    instance.reload()
     
     return show_instance_list(req)
 
 
 def show_configure(req, instance, cfgtext = None):
-    instance.get_cfgtext()
-    if cfgtext is not None and cfgtext!=instance.cfgtext:
+    if cfgtext is not None and cfgtext!=instance.cfgText:
         #sys.stderr.write("cfgtext: '%s'" % cfgtext)
-        instance.set_cfgtext(cfgtext)
-
+        instance.setConfig(cfgtext)
+        vimanager.reparseVermontConfigs()
 
     t = Template(file=tmpl_prefix + "configure.tmpl")
     t.title = "Configure host %s" % instance.host
     t.vi = instance
     t.workdir = workdir
+    t.dyncfgtext = cgi.escape(instance.dynCfgText)
     req.write(str(t))
 
 
 def show_logfile(req, instance):
-    log = instance.conn.get_logfile()
+    try:
+        instance.retrieveLog()
+        log = instance.logText
+    except:
+        log = "failed to read log file"
 
     t = Template(file=tmpl_prefix + "logfile.tmpl")
     t.title = "Log from host %s" % instance.host
@@ -92,7 +88,8 @@ def show_logfile(req, instance):
 
 
 def show_sensor_data(req, instance):
-    statxml = instance.conn.get_stats()
+    instance.retrieveSensorData()
+    statxml = instance.sensorDataText
     html = Ft.Xml.Xslt.Transform(Ft.Xml.InputSource.DefaultFactory.fromString(statxml), workdir+"/sensor_output.xsl")
     #sys.stderr.write("
     html = html.replace('%modulegraph_url%', "start.py?vi_host=%s&action=modulegraph" % instance.host)
@@ -114,7 +111,7 @@ def show_statistics(req, instance):
     t.vi = instance
     t.stats = []
     t.workdir = workdir
-    names = instance.conn.get_stat_list()
+    names = instance.getGraphList()
     i = 0
     for n in names:
         t.stats.append({'name': n, 'idx': i})
@@ -125,7 +122,7 @@ def show_statistics(req, instance):
 
     
 def show_modulegraph(req, instance):
-    statxml = instance.conn.get_stats()
+    statxml = instance.sensorDataText
     doc = NonvalidatingReader.parseString(statxml)
     g = "digraph G {\n"
     g += "\tnode[fontsize=8,shape=box,fontname=Helvetica,height=.3]\n"
@@ -154,7 +151,7 @@ def show_modulegraph(req, instance):
 
 
 def show_statimg(req, instance, idx1, idx2):
-    png = base64.b64decode(instance.conn.get_graph(int(idx1), int(idx2)))
+    png = base64.b64decode(instance.getGraph(int(idx1), int(idx2)))
     req.content_type = "image/png"
     req.write(png)
 
@@ -204,5 +201,5 @@ cgitb.enable()
 tmpl_prefix = workdir + "/templates/"
 
 vimanager = VermontInstanceManager(workdir)
-vimanager.startConfigThread()
+vimanager.setup()
 

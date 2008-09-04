@@ -18,10 +18,12 @@
 
 import os
 import resource
-import sys
 import time
+import traceback
+import sys
 
 from VermontInstance import VermontInstance
+from VermontLogger import logger
 
 
 
@@ -44,7 +46,8 @@ class LocalVermontInstance(VermontInstance):
         self.pid = 0
 
         self.retrieveConfig()
-        
+        self.syncConfig()
+
         
     def __str__(self):
         return "<local at dir '%s'>" % self.dir
@@ -92,22 +95,45 @@ class LocalVermontInstance(VermontInstance):
         f.close()
         
         
-    def retrieveStatus(self):
-        self.running = self.pid != 0
+    def retrieveStatus(self):        
+        if self.pid != 0:
+            # cleanup zombie process, if found ...
+            try:
+                (pid, ) = os.waitpid(self.pid, os.WNOHANG)
+                if self.pid==pid:
+                    self.pid = 0
+            except: #IGNORE:W0704
+                pass
+            if os.access("/proc/%d" % self.pid, os.F_OK):
+                self.running = True
+            else:
+                self.running = False
+                self.pid = 0
+        else:
+            self.running = False
+        logger().debug("LocalVermontInstance.retrieveStatus: instance running: %s, pid: %d" % (self.running, self.pid))
         
         
     def reload(self):
-        print "LocalVermontInstance.reload()"
-        if not self.running():
+        logger().debug("LocalVermontInstance.reload()")
+        self.retrieveStatus()
+        if not self.running:
             return
         
-        os.kill(self.pid, 16) # send SIGUSR1 to vermont
+        os.kill(self.pid, 10) # send SIGUSR1 to vermont
     
     
     def start(self):
-        print "LocalVermontInstance.start()"
-        if self.running():
+        logger().debug("LocalVermontInstance.start()")
+        self.retrieveStatus()
+        if self.running:
             return
+        
+        cmdline = [ "./vermont", "-f", self.dyncfgfile, "-d" ] 
+        logger().info("Vermont args: %s" % cmdline)
+        logger().info("Truncating log file %s" % self.logfile)
+        f = os.open(self.logfile, os.O_CREAT|os.O_TRUNC)
+        os.close(f)
         
         pid = os.fork()
         if pid == 0: 
@@ -126,28 +152,34 @@ class LocalVermontInstance(VermontInstance):
             os.dup2(0, 1)
             os.dup2(0, 2)
             os.chdir(self.dir)
-            os.execl("./vermont", "-f", self.dyncfgfile)
+            try:
+                os.execv("./vermont", cmdline)
+            except:
+                logger().error(traceback.format_exc())
+            sys.stderr.write("Problem starting Vermont, exiting forked process ...\n")
+            sys.exit(2)
         else:
-            sys.stderr.write("PID=%d\n" % pid)
+            logger().debug("PID of started vermont: %d" % pid)
             self.pid = pid
 
         
     def stop(self):
-        print "LocalVermontInstance.stop()"
-        if not self.running():
+        logger().debug("LocalVermontInstance.stop()")
+        self.retrieveStatus()
+        if not self.running:
             return True
 
-        os.kill(2, self.pid)
+        os.kill(self.pid, 2)
         for _ in range(1,15):
             time.sleep(1)
-            (pid, ) = os.waitpid(self.pid, os.WNOHANG)
+            pid, _ = os.waitpid(self.pid, os.WNOHANG)
             if self.pid==pid:
                 self.pid = 0
                 return True
-        os.kill(9, self.pid)
+        os.kill(self.pid, 9)            
         for _ in range(1,10):
             time.sleep(1)
-            (pid, ) = os.waitpid(self.pid, os.WNOHANG)
+            pid, _ = os.waitpid(self.pid, os.WNOHANG)
             if self.pid==pid:
                 self.pid = 0
                 return True

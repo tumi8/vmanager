@@ -20,36 +20,40 @@ from StringIO import StringIO
 from Ft.Xml.Domlette import NonvalidatingReader
 from Ft.Xml.Domlette import Print
 
-class VermontInstance:
+
+from VermontLogger import logger
+
+
+
+class VermontInstance(object):
     """represents an abstract instance of vermont
 
-    @var cfgModified: 
-    @type cfgModified: boolean
-    @var dynCfgModified: 
-    @var cfgText: configuration of Vermont as text
-    @var cfgXml: configuration of Vermont as DOM tree, DO NOT MODIFY, only modify text!
-    @var dynCfgText: dynamic configuration of Vermont as text, DO NOT MODIFY, only modify DOM tree!
-    @var dynCfgXml: dynamic configuration of Vermont as DOM tree
-    @var sensorDataText:  
-    @var sensorDataXml: 
-    @var logText:  
-    @var parseXml: True if all XML data should be parsed into a DOM tree
-    @var running: True if vermont is running
+    @var __cfgModified: 
+    @type __cfgModified: boolean
+    @var __dynCfgModified: 
+    @var __cfgText: configuration of Vermont as text
+    @var __cfgXml: configuration of Vermont as DOM tree, DO NOT MODIFY, only modify text!
+    @var __dynCfgText: dynamic configuration of Vermont as text, DO NOT MODIFY, only modify DOM tree!
+    @var __dynCfgXml: dynamic configuration of Vermont as DOM tree
+    @var __sensorDataText:  
+    @var __sensorDataXml: 
+    @var __logText:  
+    @var __parseXml: True if all XML data should be parsed into a DOM tree
+    @var __running: True if vermont is running
     """
 
-
     def __init__(self, parsexml):
-        self.cfgModified = False
-        self.dynCfgModified = False
-        self.cfgXml = None
-        self.dynCfgXml = None
-        self.parseXml = parsexml
-        self.logText = ""
-        self.sensorDataText = ""
-        self.sensorDataXml = None
-        self.cfgText = ""
-        self.dynCfgText = ""
-        self.running = False
+        self.__cfgModified = False
+        self.__dynCfgModified = False
+        self.__cfgXml = None
+        self.__dynCfgXml = None
+        self.__parseXml = parsexml
+        self.__logText = ""
+        self.__sensorDataText = ""
+        self.__sensorDataXml = None
+        self.__cfgText = ""
+        self.__dynCfgText = ""
+        self.__running = False
         
               
     def retrieveConfig(self):
@@ -57,44 +61,48 @@ class VermontInstance:
         retrieves original configuration from vermont instance and replaces current configurations,
         both original and dynamic
         """
+        logger().debug("VermontInstance.retrieveConfig()")
         self.setConfig(self._retrieveConfig())
-        self.cfgModified = False
+        self.__cfgModified = False
 
 
     def setConfig(self, text):
         """
         sets new original configuration xml in this instances, recreates dynamic configuration
         """
-        self.cfgModified = True
-        self.cfgText = text
-        if self.parseXml:
-            self.cfgXml = NonvalidatingReader.parseString(text)
-        self.dynCfgText = self.cfgText
-        if self.parseXml:
-            self.dynCfgXml = NonvalidatingReader.parseString(self.cfgText)
+        logger().debug("VermontInstance.setConfig()")
+        self.__cfgModified = True
+        self.__cfgText = text
+        if self.__parseXml:
+            self.__cfgXml = NonvalidatingReader.parseString(text)
+        self.__dynCfgModified = True
+        self.__dynCfgText = self.cfgText
+        if self.__parseXml:
+            self.__dynCfgXml = NonvalidatingReader.parseString(self.__cfgText)
         
                 
     def retrieveSensorData(self):
-        self.sensorDataText = self._retrieveSensorData()
-        if self.parseXml:
-            self.sensorDataXml = NonvalidatingReader.parseString(self.sensorDataText)
+        logger().debug("VermontInstance.retrieveSensorData()")
+        self.__sensorDataText = self._retrieveSensorData()
+        if self.__parseXml:
+            self.__sensorDataXml = NonvalidatingReader.parseString(self.__sensorDataText)
                     
             
     def syncConfig(self):
         """
         synchronizes both original and dynamic configuration to vermont instance
         """
-        print "syncConfig"
-        if self.cfgModified:
+        logger().info("VermontInstance.syncConfig()")
+        if self.__cfgModified:
             self._transmitConfig()
-            self.cfgModified = False
+            self.__cfgModified = False
         if self.dynCfgModified:            
-            if self.parseXml:
+            if self.__parseXml:
                 textio = StringIO()
                 Print(self.dynCfgXml, stream=textio)
-                self.dynCfgText = textio.getvalue()
+                self.__dynCfgText = textio.getvalue()
             self._transmitDynConfig()
-            self.dynCfgModified = False
+            self.__dynCfgModified = False
             
             
     def retrieveStatus(self):
@@ -129,3 +137,84 @@ class VermontInstance:
     
     def _transmitDynConfig(self):
         raise "not implemented"
+    
+    
+    def getCfgModified(self):
+        return self.__cfgModified
+
+
+    def getDynCfgModified(self):
+        return self.__dynCfgModified
+
+
+    def getCfgXml(self):
+        return self.__cfgXml
+
+
+    def getDynCfgXml(self):
+        return self.__dynCfgXml
+
+
+    def getLogText(self):
+        return self.__logText
+
+
+    def getSensorDataText(self):
+        return self.__sensorDataText
+
+
+    def getSensorDataXml(self):
+        return self.__sensorDataXml
+
+
+    def getCfgText(self):
+        return self.__cfgText
+
+
+    def getDynCfgText(self):
+        return self.__dynCfgText
+
+
+    def getRunning(self):
+        return self.__running
+
+
+    def setCfgModified(self, value):
+        self.__cfgModified = value
+
+
+    def setDynCfgModified(self, value):
+        self.__dynCfgModified = value
+
+
+    def setLogText(self, value):
+        self.__logText = value
+
+
+    def setSensorDataText(self, value):
+        self.__sensorDataText = value
+
+
+    def setCfgText(self, value):
+        logger().debug("setting new cfgtext")
+        self.__cfgText = value
+
+
+    def setDynCfgText(self, value):
+        logger().debug("setting new dyncfgtext")
+        self.__dynCfgText = value
+
+
+    def setRunning(self, value):
+        self.__running = value
+
+    cfgModified = property(getCfgModified, setCfgModified, None, None)
+    dynCfgModified = property(getDynCfgModified, setDynCfgModified, None, None)
+    cfgXml = property(getCfgXml, None, None, None)
+    dynCfgXml = property(getDynCfgXml, None, None, None)
+    logText = property(getLogText, setLogText, None, None)
+    sensorDataText = property(getSensorDataText, setSensorDataText, None, None)
+    sensorDataXml = property(getSensorDataXml, None, None, None)
+    cfgText = property(getCfgText, setCfgText, None, None)
+    dynCfgText = property(getDynCfgText, setDynCfgText, None, None)
+    running = property(getRunning, setRunning, None, None)

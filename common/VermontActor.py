@@ -2,6 +2,7 @@
 import Ft.Xml.cDomlette
 import time
 import traceback
+from VermontLogger import logger
 
 class VermontActor:
     """
@@ -103,9 +104,9 @@ class VermontActor:
         if self.action=="modifyvalue":
             self._performModifyValue()
         elif self.action=="pausemodule":
-            pass
+            self._changeModuleState(True)
         elif self.action=="resumemodule":
-            pass
+            self._changeModuleState(False)
         else:
             raise Exception("unknown action specified for sensor: '%'" % self.action)
         
@@ -113,7 +114,7 @@ class VermontActor:
     def _performModifyValue(self):
         nodes = self.instance.dynCfgXml.xpath(self.target)
         if len(nodes)>1:
-            print "WARNING: found more than one matching node for xpath string '%s'" % self.target
+            logger().warning("WARNING: found more than one matching node for xpath string '%s'" % self.target)
         targetnode = None
         for n in nodes[0].childNodes:
             if isinstance(n, Ft.Xml.cDomlette.Text):
@@ -122,14 +123,37 @@ class VermontActor:
         if targetnode is None:
             raise RuntimeError("failed to find target node for actor with id=%s" % self.id)
         vrs = { 'v' : targetnode.nodeValue}
-        print "old v: ", vrs['v']
-        print "code: ", self.code
+        logger().info("old v: %s" % vrs['v'])
+        logger().info("code: %s" % self.code)
         try:
             exec self.code in vrs # IGNORE:W0122
         except:
-            print "failed to execute code in instance %s for actor id=%d" % (self.instance, self.id)
-            traceback.print_exc()
-        print "new v: ", vrs['v']
+            logger().error("failed to execute code in instance %s for actor id=%d" % (self.instance, self.id))
+            logger().error(traceback.format_exc())
+        logger().info("new v: %s" % vrs['v'])
         if vrs['v']!=targetnode.nodeValue:
             targetnode.nodeValue = str(vrs['v'])
             self.instance.dynCfgModified = True
+            
+            
+    def _changeModuleState(self, pausemodule):
+        moduleid = self.instance.dynCfgXml.xpath("number(%s/@id)" % self.target)
+        if pausemodule:
+            refnext = self.instance.dynCfgXml.xpath("/ipfixConfig/*/next[number()=%d]" % moduleid)
+            for n in refnext:
+                logger().debug("VermontActor._performModifyValue: disabling node %s" % n.xmlBase)
+                newnode = self.instance.dynCfgXml.createElementNS(None, "next_disabled")
+                for c in n.childNodes: newnode.appendChild(c)
+                p = n.parentNode
+                p.removeChild(n)
+                p.appendChild(newnode)
+        else:
+            refnext = self.instance.dynCfgXml.xpath("/ipfixConfig/*/next_disabled[number()=%d]" % moduleid)
+            for n in refnext:
+                logger().debug("VermontActor._performModifyValue: enabling node %s" % n.xmlBase)
+                newnode = self.instance.dynCfgXml.createElementNS(None, "next")
+                for c in n.childNodes: newnode.appendChild(c)
+                p = n.parentNode
+                p.removeChild(n)
+                p.appendChild(newnode)
+        self.instance.dynCfgModified = True

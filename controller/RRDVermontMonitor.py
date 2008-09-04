@@ -1,4 +1,7 @@
 import os
+import base64
+
+from VermontLogger import logger
 
 
 class RRDVermontMonitor:
@@ -21,12 +24,11 @@ class RRDVermontMonitor:
         rrdfn = "rrd/db_%d_%d.rrd"
         for i in range(0, len(self.xpaths)):
             data = xml.xpath(self.xpaths[i])
-            print "inserting value %s for element '%s' (%s)" % (data, self.names[i], self.xpaths[i])
+            logger().info("inserting value %s for element '%s' (%s)" % (data, self.names[i], self.xpaths[i]))
             for j in range(0, len(self.rrdintervals)):
                 if not os.access(rrdfn % (i, j), os.R_OK|os.W_OK):
                     os.system("rrdtool create %s -s 5 DS:s:GAUGE:%d:U:U RRA:AVERAGE:0.5:%d:10000 RRA:MIN:0.5:%d:10000 RRA:MAX:0.5:%d:10000" % (rrdfn % (i, j), self.rrdintervals[j]*5*2, self.rrdintervals[j], self.rrdintervals[j], self.rrdintervals[j]))
                 os.system("rrdtool update %s N:%f " % (rrdfn % (i, j), data))
-        pass
     
 
     def get_graph(self, idx1, idx2):

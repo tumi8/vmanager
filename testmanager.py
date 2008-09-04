@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import logging
 
 d = os.path.dirname(sys.argv[0])
 sys.path.insert(0, d + 'common')
@@ -10,7 +11,11 @@ sys.path.insert(0, d + 'webinterface')
 import LocalVermontInstance
 import VermontConfigurator
 import VermontInstanceManager
+import VermontLogger
 
+
+VermontLogger.init("testapp", "tmp/test.log", True)
+VermontLogger.logger().info("starting test")
 lvi = LocalVermontInstance.LocalVermontInstance("tmp", "tmp.conf", "tmp.log", True)
 vim = VermontInstanceManager.VermontInstanceManager("tmp", False)
 vim.vermontInstances = (lvi)
