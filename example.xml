@@ -1,16 +1,30 @@
-<ipfixConfig xmlns="urn:ietf:params:xml:ns:ipfix-config">
+<ipfixConfig>
 	<sensors>
 		<sensor id="1">
-			<dataXPath>sum(/vermont/sensorData/processor/util)</dataXPath>
+			<source>sum(/vermont/sensorData/processor/util)</source>
 			<threshold>90</threshold>
 			<activation>positive</activation>
 		</sensor>
 		<sensor id="2">
-			<dataXPath>sum(/vermont/sensorData/processor/util)</dataXPath>
+			<source>sum(/vermont/sensorData/processor/util)</source>
 			<threshold>50</threshold>
 			<activation>negative</activation>
 		</sensor>
 	</sensors>
+	<actors>
+		<actor id="1">
+			<action>modifyvalue</action>
+			<code>v = int(v)*2</code>
+			<trigger>always</trigger>
+			<target>/ipfixConfig/filter[@id=2]/countBased/interval</target>
+		</actor>
+		<actor id="2">
+			<action>modifyvalue</action>
+			<code>if int(v)&gt;2: v = int(v)/2</code>
+			<trigger>always</trigger>
+			<target>/ipfixConfig/filter[@id=2]/countBased/interval</target>
+		</actor>
+	</actors>
 
 	<sensorManager id="99">
 		<checkinterval>2</checkinterval>
@@ -23,12 +37,9 @@
 
 	<filter id="2">
 		<countBased>
-			<interval>2
-				<actor id="1" action="modifyvalue" mod="$v*2" trigger="always" />
-				<actor id="2" action="modifyvalue" mod="if ($v>2): $v/2" trigger="always" />
-			</interval>
+			<interval>2</interval>
 			<spacing>2</spacing>
-		<countBased>
+		</countBased>
 		<next>3</next>
 	</filter>
 

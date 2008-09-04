@@ -18,49 +18,92 @@
 
 import xmlrpclib
 import re
+from StringIO import StringIO
+from Ft.Xml.Domlette import NonvalidatingReader
+from Ft.Xml.Domlette import Print
 
 class VermontInstance:
-	"represents a remote instance of vermont"
+    """represents an abstract instance of vermont
 
-	url = None
-	online = None
-	_conn = None
-	host = None
-	cfgtext = None
-	status = None
-	sensorData = None
-
-
-	def __init__(self, url):
-		self.url = url
-		self.online = False
-		self._conn = xmlrpclib.Server(url, allow_none=True)
-		self.host = re.match("http://(.*)[:/$]", url).group(1)
-		self.sensorData = ""
-		self.checkOnline()
-		if online:
-			self.get_cfgtext()
+    @ivar cfgModified: fdsa
+    @type cfgModified: boolean
+    @ivar dynCfgModified: fdas
+    @ivar _cfgText: configuration of Vermont as text
+    @ivar cfgXml: configuration of Vermont as DOM tree, DO NOT MODIFY, only modify text!
+    @ivar _dynCfgText: dynamic configuration of Vermont as text, DO NOT MODIFY, only modify DOM tree!
+    @ivar dynCfgXml: dynamic configuration of Vermont as DOM tree
+    @ivar sensorDataText: fdsa 
+    @ivar sensorDataXml: fdsa
+    @ivar logText:  fdsa 
+    """
 
 
-	def checkOnline(self):
-		try:
-			self.online = self._conn.is_instance_running()
-		except e:
-			self.online = false
-			self.status = str(e) 
-	
-
-	def get_cfgtext(self):
-		self.cfgtext = self._conn.get_config()
-
-
-	def set_cfgtext(self, text):
-		self._conn.save_config(text)
-		self.cfgtext = text
+    def __init__(self):
+        self.cfgModified = False
+        self.dynCfgModified = False
+        
+        
+    def retrieveConfig(self):
+        """
+        retrieves original configuration from vermont instance and replaces current configurations,
+        both original and dynamic
+        """
+        self.setConfig(self._retrieveConfig())
+        self.cfgModified = False
 
 
-	def getSensorData(self):
-		if self.online:
-			self.sensorData = self._conn.get_stats()
-		else:
-			self.sensorData = ""
+    def setConfig(self, text):
+        """
+        sets new original configuration xml in this instances, recreates dynamic configuration
+        """
+        self.cfgModified = True
+        self._cfgText = text
+        self.cfgXml = NonvalidatingReader.parseString(text)
+        self._dynCfgText = self._cfgText
+        self.dynCfgXml = NonvalidatingReader.parseString(self._cfgText)
+        
+        
+        
+    def retrieveSensorData(self):
+        self.sensorDataText = self._retrieveSensorData()
+        self.sensorDataXml = NonvalidatingReader.parseString(self.sensorDataText)
+                    
+            
+    def syncConfig(self):
+        """
+        synchronizes both original and dynamic configuration to vermont instance
+        """
+        print "syncConfig"
+        if self.cfgModified:
+            self._transmitConfig()
+            self.cfgModified = False
+        if self.dynCfgModified:
+            textio = StringIO()
+            Print(self.dynCfgXml, stream=textio)
+            self._dynCfgText = textio.getvalue()
+            self._transmitDynConfig()
+            self.dynCfgModified = False
+            
+            
+    def running(self):
+        """
+        @return: true if vermont instance is running
+        """
+        raise "not implemented"
+            
+    
+    def retrieveLog(self):
+        raise "not implemented"
+
+    
+    def reload(self):
+        raise "not implemented"
+    
+    def start(self):
+        raise "not implemented"
+    
+    def stop(self):
+        """
+        @return: True if Vermont was successfully stopped, False if not
+        """
+        raise "not implemented"
