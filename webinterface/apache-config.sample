@@ -16,9 +16,9 @@
         AuthName "Vermont_Web"
         AuthType Basic
         Require valid-user
-
-        AddHandler cgi-script .cgi .py
-        Options +ExecCGI
+        AddHandler mod_python .py
+        PythonHandler mod_python.publisher
+        PythonDebug on
     </Directory>
 
 </VirtualHost>
