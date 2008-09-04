@@ -56,7 +56,7 @@ class VermontConfigurator:
             for cs in self._sensors:
                 if cs.id==idnumber:
                     raise RuntimeError("two sensor ids occured in configuration (id=%s)!" % idnumber)
-            self._sensors.append(VermontSensor(vinstance, id, xpath, threshold, activation))
+            self._sensors.append(VermontSensor(vinstance, idnumber, xpath, threshold, activation))
             
             
     def _parseActors(self, xml, vinstance):

@@ -23,7 +23,7 @@ from VermontInstanceManager import VermontInstanceManager
 def show_instance_list(req):
     # check status of all Vermont instances
     for i in vimanager.vermontInstances:
-        i.get_status()
+        i.retrieveStatus()
 
     t = Template(file=tmpl_prefix + "instance_list.tmpl")
     t.workdir = workdir

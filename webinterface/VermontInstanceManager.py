@@ -5,7 +5,7 @@ import traceback
 import ConfigParser
 
 
-from VermontInstance import VermontInstance
+from RemoteVermontInstance import RemoteVermontInstance
 from VermontConfigurator import VermontConfigurator 
 
 
@@ -20,18 +20,23 @@ class VermontInstanceManager:
     @type _checkInterval: integer
     @ivar _exitWorker
     @type _exitWorker: boolean  
+    @ivar _workDir
     """
     
-    def __init__(self, configparser):
-        if configparser is not None:
-            self._readConfig(configparser)
+    def __init__(self, workdir, loadconfig = True):
+        self._workDir = workdir
+        self._checkInterval = 10
+        self.vermontInstances = []
+        self._exitWorker = False
+        if loadconfig:
+            self._readConfig()
             self._configurator = VermontConfigurator()
-            self._configurator.parseConfigs(self.vermontInstances, True)        
+            self._configurator.parseConfigs(self.vermontInstances)        
         
         
     def _readConfig(self):
         cp = ConfigParser.ConfigParser()
-        cp.read(workdir+"/vermont_web.conf")
+        cp.read(self._workDir+"/vermont_web.conf")
         sec = "Configurator"
         self._checkInterval = cp.getint(sec, "interval")
         
@@ -40,10 +45,10 @@ class VermontInstanceManager:
         i = 1
         try:
             while True:
-                instance = VermontInstance(cp.get(sec, "host_%d" % i))
+                instance = RemoteVermontInstance(cp.get(sec, "host_%d" % i), True)
                 self.vermontInstances.append(instance)
                 i += 1
-        except ConfigParser.NoOptionError:
+        except ConfigParser.NoOptionError: #IGNORE:W0704
             pass
         if i==1:
             raise Exception("no valid remote Vermont instance entries in config!")

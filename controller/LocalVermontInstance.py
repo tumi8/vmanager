@@ -38,9 +38,9 @@ class LocalVermontInstance(VermontInstance):
     def __init__(self, directory, cfgfile, logfile, parsexml):
         VermontInstance.__init__(self, parsexml)
         self.dir = directory
-        self.cfgfile = "%s/%s" % (dir, cfgfile)
-        self.dyncfgfile = "%s/%s.dynconf" % (dir, cfgfile)
-        self.logfile = "%s/%s" % (dir, logfile)
+        self.cfgfile = "%s/%s" % (directory, cfgfile)
+        self.dyncfgfile = "%s/%s.dynconf" % (directory, cfgfile)
+        self.logfile = "%s/%s" % (directory, logfile)
         self.pid = 0
 
         self.retrieveConfig()
@@ -73,14 +73,14 @@ class LocalVermontInstance(VermontInstance):
             
     def _transmitConfig(self):
         f = open(self.cfgfile, "w")
-        f.write(self._cfgText)
+        f.write(self.cfgText)
         f.close()
         self.cfgModified = False            
             
             
     def _transmitDynConfig(self):
         f = open(self.dyncfgfile, "w")
-        f.write(self._dynCfgText)
+        f.write(self.dynCfgText)
         f.write("\n")
         f.close()
         self.cfgModified = False
@@ -92,8 +92,8 @@ class LocalVermontInstance(VermontInstance):
         f.close()
         
         
-    def running(self):
-        return self.pid != 0
+    def retrieveStatus(self):
+        self.running = self.pid != 0
         
         
     def reload(self):

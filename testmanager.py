@@ -12,7 +12,7 @@ import VermontConfigurator
 import VermontInstanceManager
 
 lvi = LocalVermontInstance.LocalVermontInstance("tmp", "tmp.conf", "tmp.log", True)
-vim = VermontInstanceManager.VermontInstanceManager(None)
+vim = VermontInstanceManager.VermontInstanceManager("tmp", False)
 vim.vermontInstances = (lvi)
 vim._checkInterval = 5
 

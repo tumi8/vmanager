@@ -18,7 +18,8 @@
 
 import xmlrpclib
 import re
-from Ft.Xml.Domlette import NonvalidatingReader
+from VermontInstance import VermontInstance
+
 
 class RemoteVermontInstance(VermontInstance):
     "represents a remote instance of vermont"
@@ -34,22 +35,23 @@ class RemoteVermontInstance(VermontInstance):
         VermontInstance.__init__(self, parsexml)
         self.url = url
         self.online = False
-        self._conn = xmlrpclib.Server(url, allow_none=True)
+        self._conn = xmlrpclib.ServerProxy(url, allow_none=1)
         self.host = re.match("http://(.*)[:/$]", url).group(1)
-        self.running()
+        self.retrieveStatus()
         if self.online:
             self.retrieveConfig()
 
 
-    def running(self):
+    def retrieveStatus(self):
         try:
-            r = self._conn.running()
+            self._conn.retrieveStatus()
+            self.running = self._conn.running
             self.online = True
-            return r
-        except e:
+            self.status = ["stopped", "running"][self.running]
+        except Exception ,e: #IGNORE:W0703
             self.online = False
-            self.status = str(e) 
-            return False
+            self.running = False
+            self.status = "manager not found on host (%s)" % e
     
 
     def _retrieveConfig(self):
@@ -63,7 +65,7 @@ class RemoteVermontInstance(VermontInstance):
             
             
     def _transmitConfig(self):
-        self._conn.setConfig(self._cfgtext)
+        self._conn.setConfig(self.cfgText)
         self.cfgModified = False
         self._conn.syncConfig()
         

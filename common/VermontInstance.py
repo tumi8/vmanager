@@ -34,6 +34,7 @@ class VermontInstance:
     @var sensorDataXml: 
     @var logText:  
     @var parseXml: True if all XML data should be parsed into a DOM tree
+    @var running: True if vermont is running
     """
 
 
@@ -48,6 +49,7 @@ class VermontInstance:
         self.sensorDataXml = None
         self.cfgText = ""
         self.dynCfgText = ""
+        self.running = False
         
               
     def retrieveConfig(self):
@@ -71,8 +73,7 @@ class VermontInstance:
         if self.parseXml:
             self.dynCfgXml = NonvalidatingReader.parseString(self.cfgText)
         
-        
-        
+                
     def retrieveSensorData(self):
         self.sensorDataText = self._retrieveSensorData()
         if self.parseXml:
@@ -96,10 +97,7 @@ class VermontInstance:
             self.dynCfgModified = False
             
             
-    def running(self):
-        """
-        @return: true if vermont instance is running
-        """
+    def retrieveStatus(self):
         raise "not implemented"
             
     

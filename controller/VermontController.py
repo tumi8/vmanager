@@ -14,7 +14,6 @@ sys.path.insert(0, d + 'controller')
 sys.path.insert(0, d + '../common')
 
 from RemoteInterface import RemoteInterface
-from VermontInstance import VermontInstance
 from RRDVermontMonitor import RRDVermontMonitor
 
 
@@ -24,7 +23,7 @@ class VCRPCServer(SimpleXMLRPCServer.SimpleXMLRPCServer):
     @ivar allowedIp:
     """
 
-    def verify_request(self, request, client_address):
+    def verify_request(self, _, client_address):
         return client_address[0]==self.allowedIp
 
 
@@ -45,6 +44,17 @@ class VermontController:
     """
     
     def __init__(self, configfile):
+        self.dir = None
+        self.cfgfile = None
+        self.logfile = None
+        self.moninterval = None
+        self.allowedIp = None
+        self.xpaths = []
+        self.names = []
+        self.server = None
+        self.vMonitor = None
+        self.rInterface = None
+        
         try:
             self._readConfig(configfile)
         except:
@@ -69,7 +79,7 @@ class VermontController:
                 self.xpaths.append(cp.get("Stats", "XPath_%d" % i))
                 self.names.append(cp.get("Stats", "Name_%d" % i))
                 i += 1
-        except:
+        except: #IGNORE:W0704
             pass
         
         
@@ -81,7 +91,7 @@ class VermontController:
         # RPC server
         self.server = VCRPCServer(("", 8000))
         self.server.allow_reuse_address = True
-        self.server.allowedIp = self.allowedIp
+        self.server.allowedIp = self.allowedIp  #IGNORE:W0201
         self.server.register_instance(self.rInterface)        
         
         
@@ -94,7 +104,8 @@ class VermontController:
         while True:
             print "VermontController.background_thread: collecting monitoring data now"
 
-            if self.rInterface.running():
+            self.rInterface.retrieveStatus()
+            if self.rInterface.running:
                 # try to read in statistics data several times ...
                 xml = None
                 trycount = 0
@@ -107,9 +118,8 @@ class VermontController:
                         traceback.print_exc()
                         print "failed to read sensor data xml, trying again ..."
                         time.sleep(1)
-                        pass
                     trycount += 1
-                self.vMonitor.collect_data(self.vInstance.sensorDataXml)
+                self.vMonitor.collect_data(self.rInterface.sensorDataXml)
             else:
                 print "VermontManager.rrd_thread: skipping stat recording, as instance is not running"
             time.sleep(self.moninterval)
