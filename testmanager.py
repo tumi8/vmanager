@@ -4,14 +4,14 @@ import time
 
 d = os.path.dirname(sys.argv[0])
 sys.path.insert(0, d + 'common')
-sys.path.insert(0, d + 'manager')
+sys.path.insert(0, d + 'controller')
 sys.path.insert(0, d + 'webinterface')
 
 import LocalVermontInstance
 import VermontConfigurator
 import VermontInstanceManager
 
-lvi = LocalVermontInstance.LocalVermontInstance("tmp", "tmp.conf")
+lvi = LocalVermontInstance.LocalVermontInstance("tmp", "tmp.conf", "tmp.log", True)
 vim = VermontInstanceManager.VermontInstanceManager(None)
 vim.vermontInstances = (lvi)
 vim._checkInterval = 5

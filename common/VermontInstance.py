@@ -16,8 +16,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-import xmlrpclib
-import re
 from StringIO import StringIO
 from Ft.Xml.Domlette import NonvalidatingReader
 from Ft.Xml.Domlette import Print
@@ -25,24 +23,33 @@ from Ft.Xml.Domlette import Print
 class VermontInstance:
     """represents an abstract instance of vermont
 
-    @ivar cfgModified: fdsa
+    @var cfgModified: 
     @type cfgModified: boolean
-    @ivar dynCfgModified: fdas
-    @ivar _cfgText: configuration of Vermont as text
-    @ivar cfgXml: configuration of Vermont as DOM tree, DO NOT MODIFY, only modify text!
-    @ivar _dynCfgText: dynamic configuration of Vermont as text, DO NOT MODIFY, only modify DOM tree!
-    @ivar dynCfgXml: dynamic configuration of Vermont as DOM tree
-    @ivar sensorDataText: fdsa 
-    @ivar sensorDataXml: fdsa
-    @ivar logText:  fdsa 
+    @var dynCfgModified: 
+    @var cfgText: configuration of Vermont as text
+    @var cfgXml: configuration of Vermont as DOM tree, DO NOT MODIFY, only modify text!
+    @var dynCfgText: dynamic configuration of Vermont as text, DO NOT MODIFY, only modify DOM tree!
+    @var dynCfgXml: dynamic configuration of Vermont as DOM tree
+    @var sensorDataText:  
+    @var sensorDataXml: 
+    @var logText:  
+    @var parseXml: True if all XML data should be parsed into a DOM tree
     """
 
 
-    def __init__(self):
+    def __init__(self, parsexml):
         self.cfgModified = False
         self.dynCfgModified = False
+        self.cfgXml = None
+        self.dynCfgXml = None
+        self.parseXml = parsexml
+        self.logText = ""
+        self.sensorDataText = ""
+        self.sensorDataXml = None
+        self.cfgText = ""
+        self.dynCfgText = ""
         
-        
+              
     def retrieveConfig(self):
         """
         retrieves original configuration from vermont instance and replaces current configurations,
@@ -57,16 +64,19 @@ class VermontInstance:
         sets new original configuration xml in this instances, recreates dynamic configuration
         """
         self.cfgModified = True
-        self._cfgText = text
-        self.cfgXml = NonvalidatingReader.parseString(text)
-        self._dynCfgText = self._cfgText
-        self.dynCfgXml = NonvalidatingReader.parseString(self._cfgText)
+        self.cfgText = text
+        if self.parseXml:
+            self.cfgXml = NonvalidatingReader.parseString(text)
+        self.dynCfgText = self.cfgText
+        if self.parseXml:
+            self.dynCfgXml = NonvalidatingReader.parseString(self.cfgText)
         
         
         
     def retrieveSensorData(self):
         self.sensorDataText = self._retrieveSensorData()
-        self.sensorDataXml = NonvalidatingReader.parseString(self.sensorDataText)
+        if self.parseXml:
+            self.sensorDataXml = NonvalidatingReader.parseString(self.sensorDataText)
                     
             
     def syncConfig(self):
@@ -77,10 +87,11 @@ class VermontInstance:
         if self.cfgModified:
             self._transmitConfig()
             self.cfgModified = False
-        if self.dynCfgModified:
-            textio = StringIO()
-            Print(self.dynCfgXml, stream=textio)
-            self._dynCfgText = textio.getvalue()
+        if self.dynCfgModified:            
+            if self.parseXml:
+                textio = StringIO()
+                Print(self.dynCfgXml, stream=textio)
+                self.dynCfgText = textio.getvalue()
             self._transmitDynConfig()
             self.dynCfgModified = False
             
@@ -106,4 +117,17 @@ class VermontInstance:
         """
         @return: True if Vermont was successfully stopped, False if not
         """
+        raise "not implemented"
+    
+    def _retrieveConfig(self):
+        raise "not implemented"
+    
+    def _retrieveSensorData(self):
+        raise "not implemented"
+        return "" # IGNORE:W0101
+    
+    def _transmitConfig(self):
+        raise "not implemented"
+    
+    def _transmitDynConfig(self):
         raise "not implemented"

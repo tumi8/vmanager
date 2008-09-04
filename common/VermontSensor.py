@@ -16,9 +16,9 @@ class VermontSensor:
     @ivar vinstance: 
     """
     
-    def __init__(self, vinstance, id, xpath, threshold, activation):
+    def __init__(self, vinstance, idnumber, xpath, threshold, activation):
         self.vinstance = vinstance
-        self.id = id
+        self.id = idnumber
         self.dataXPath = xpath
         self.threshold = int(threshold)
         self.activation = activation

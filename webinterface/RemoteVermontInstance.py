@@ -30,40 +30,63 @@ class RemoteVermontInstance(VermontInstance):
     status = None
 
 
-    def __init__(self, url):
-        VermontInstance.__init__()
+    def __init__(self, url, parsexml):
+        VermontInstance.__init__(self, parsexml)
         self.url = url
         self.online = False
         self._conn = xmlrpclib.Server(url, allow_none=True)
         self.host = re.match("http://(.*)[:/$]", url).group(1)
-        self.checkOnline()
+        self.running()
         if self.online:
-            self.getConfig()
+            self.retrieveConfig()
 
 
-    def checkOnline(self):
+    def running(self):
         try:
-            self.online = self._conn.is_instance_running()
+            r = self._conn.running()
+            self.online = True
+            return r
         except e:
-            self.online = false
+            self.online = False
             self.status = str(e) 
+            return False
     
 
     def _retrieveConfig(self):
-        self._conn.get_config()
+        self._conn.retrieveConfig()
+        return self._conn.cfgText
 
 
     def _retrieveSensorData(self):
-        if self.online:
-            return self._conn.get_stats()
-        else:
-            return ""
+        self._conn.retrieveSensorData()
+        return self._conn.sensorDataText
             
             
     def _transmitConfig(self):
-        self._conn.save_config(self._cfgtext)
-        self._cfgModified = False
+        self._conn.setConfig(self._cfgtext)
+        self.cfgModified = False
+        self._conn.syncConfig()
+        
+        
+    def _transmitDynConfig(self):
+        self._conn.dynCfgText = self.dynCfgText
+        self._conn.dynCfgModified = True
+        self._conn.syncConfig()
+        self.dynCfgModified = False
+        
+        
+    def retrieveLog(self):
+        self._conn.retrieveLog()
+        self.logText = self._conn.logText
         
         
     def reload(self):
         self._conn.reload()
+        
+        
+    def start(self):
+        self._conn.start()
+        
+        
+    def stop(self):
+        self._conn.stop()

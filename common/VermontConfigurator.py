@@ -15,7 +15,7 @@ class VermontConfigurator:
         self._sensors = []
     
     
-    def parseConfigs(self, vinstances, globalconfig = False):
+    def parseConfigs(self, vinstances):
         """parses given list of VermontInstances for sensors/actors and recreates internal structure
         @param vinstances:
         @ptype vinstances: array of VermontInstance
@@ -45,24 +45,24 @@ class VermontConfigurator:
     def _parseSensors(self, xml, vinstance):
         sensors = xml.xpath("/ipfixConfig/sensors/sensor")
         for s in sensors:
-            id = s.xpath("string(@id)")
+            idnumber = s.xpath("string(@id)")
             xpath = s.xpath("string(source)")
             if xpath=="":
-                raise RuntimeError("failed to parse source for sensor with id=%s" % id)
+                raise RuntimeError("failed to parse source for sensor with id=%s" % idnumber)
             threshold = s.xpath("string(threshold)")
             activation = s.xpath("string(activation)")
             if (activation!="positive") and (activation!="negative"):
                 raise RuntimeError("failed to parse element activation")
             for cs in self._sensors:
-                if cs.id==id:
-                    raise RuntimeError("two sensor ids occured in configuration (id=%s)!" % id)
+                if cs.id==idnumber:
+                    raise RuntimeError("two sensor ids occured in configuration (id=%s)!" % idnumber)
             self._sensors.append(VermontSensor(vinstance, id, xpath, threshold, activation))
             
             
     def _parseActors(self, xml, vinstance):
         actors = xml.xpath("/ipfixConfig/actors/actor")
         for a in actors:
-            id = a.xpath("string(@id)")
+            idnumber = a.xpath("string(@id)")
             action = a.xpath("string(action)")
             code = a.xpath("string(code)")
             trigger = a.xpath("string(trigger)")
@@ -70,11 +70,11 @@ class VermontConfigurator:
             target = a.xpath("string(target)")
             foundit = False
             for s in self._sensors:
-                if s.id==id:
+                if s.id==idnumber:
                     foundit = True
-                    s.actors.append(VermontActor(id, action, code, trigger, delay, target, vinstance))
+                    s.actors.append(VermontActor(idnumber, action, code, trigger, delay, target, vinstance))
             if not foundit:
-                raise RuntimeError("failed to find sensor for actor with id=%s" % id)
+                raise RuntimeError("failed to find sensor for actor with id=%s" % idnumber)
             
             
     def checkSensors(self):

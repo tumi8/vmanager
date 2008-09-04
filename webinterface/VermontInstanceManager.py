@@ -12,7 +12,7 @@ from VermontConfigurator import VermontConfigurator
 class VermontInstanceManager:
     """Manages multiple Vermont instances
     
-    @ivar vermontInstances: 
+    @var vermontInstances: 
     @type vermontInstances: list of VermontInstance
     @ivar _configurator: fdsa 
     @type _configurator: VermontConfigurator

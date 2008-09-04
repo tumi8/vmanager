@@ -16,10 +16,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-import xmlrpclib
-import re
 import os
-from Ft.Xml.Domlette import NonvalidatingReader
+import resource
+import sys
+import time
 
 from VermontInstance import VermontInstance
 
@@ -35,12 +35,12 @@ class LocalVermontInstance(VermontInstance):
     pid = None
 
 
-    def __init__(self, dir, cfgfile):
-        VermontInstance.__init__(self)
-        self.dir = dir
+    def __init__(self, directory, cfgfile, logfile, parsexml):
+        VermontInstance.__init__(self, parsexml)
+        self.dir = directory
         self.cfgfile = "%s/%s" % (dir, cfgfile)
-        self.dyncfgfile = "%s/vmanager.dyn.conf" % dir
-        self.logfile = "%s/vmanager.log" % dir
+        self.dyncfgfile = "%s/%s.dynconf" % (dir, cfgfile)
+        self.logfile = "%s/%s" % (dir, logfile)
         self.pid = 0
 
         self.retrieveConfig()
@@ -75,7 +75,7 @@ class LocalVermontInstance(VermontInstance):
         f = open(self.cfgfile, "w")
         f.write(self._cfgText)
         f.close()
-        self._cfgModified = False            
+        self.cfgModified = False            
             
             
     def _transmitDynConfig(self):
@@ -83,28 +83,29 @@ class LocalVermontInstance(VermontInstance):
         f.write(self._dynCfgText)
         f.write("\n")
         f.close()
-        self._cfgModified = False
+        self.cfgModified = False
         
         
     def retrieveLog(self):
         f = open(self.logfile)
-        t = f.read()
+        self.logText = f.read()
         f.close()
-        return t
         
         
     def running(self):
-       return pid != 0
+        return self.pid != 0
         
         
     def reload(self):
+        print "LocalVermontInstance.reload()"
         if not self.running():
             return
         
-        os.kill(pid, 1) # send SIGHUP to vermont
+        os.kill(self.pid, 16) # send SIGUSR1 to vermont
     
     
     def start(self):
+        print "LocalVermontInstance.start()"
         if self.running():
             return
         
@@ -112,14 +113,14 @@ class LocalVermontInstance(VermontInstance):
         if pid == 0: 
             maxfd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
             if (maxfd == resource.RLIM_INFINITY):
-                maxfd = MAXFD
+                maxfd = os.sysconf('SC_OPEN_MAX')
 
             REDIRECT_TO = self.logfile
             # Iterate through and close all file descriptors.
             for fd in range(0, maxfd):
                 try:
                     os.close(fd)
-                except:
+                except: #IGNORE:W0704
                     pass
             os.open(REDIRECT_TO, os.O_RDWR)
             os.dup2(0, 1)
@@ -132,20 +133,21 @@ class LocalVermontInstance(VermontInstance):
 
         
     def stop(self):
+        print "LocalVermontInstance.stop()"
         if not self.running():
             return True
 
-        kill(2, self.pid)
-        for i in range(1,15):
+        os.kill(2, self.pid)
+        for _ in range(1,15):
             time.sleep(1)
-            (pid, status) = os.waitpid(self.pid, WNOHANG)
+            (pid, ) = os.waitpid(self.pid, os.WNOHANG)
             if self.pid==pid:
                 self.pid = 0
                 return True
-        kill(9, self.pid)
-        for i in range(1,10):
+        os.kill(9, self.pid)
+        for _ in range(1,10):
             time.sleep(1)
-            (pid, status) = os.waitpid(self.pid, WNOHANG)
+            (pid, ) = os.waitpid(self.pid, os.WNOHANG)
             if self.pid==pid:
                 self.pid = 0
                 return True

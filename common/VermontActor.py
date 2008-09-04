@@ -1,5 +1,7 @@
 
 import Ft.Xml.cDomlette
+import time
+import traceback
 
 class VermontActor:
     """
@@ -15,11 +17,11 @@ class VermontActor:
     """
     
     
-    def __init__(self, id, action, code, _trigger, delay, target, instance):
-        self.id = id
+    def __init__(self, idnumber, action, code, trigger, delay, target, instance):
+        self.id = idnumber
         self.action = action
         self.code = code
-        self._trigger = _trigger
+        self._trigger = trigger
         self.delay = delay
         self.target = target
         self.instance = instance
@@ -119,15 +121,15 @@ class VermontActor:
                 break
         if targetnode is None:
             raise RuntimeError("failed to find target node for actor with id=%s" % self.id)
-        vars = { 'v' : targetnode.nodeValue}
-        print "old v: ", vars['v']
+        vrs = { 'v' : targetnode.nodeValue}
+        print "old v: ", vrs['v']
         print "code: ", self.code
         try:
-            exec self.code in vars
+            exec self.code in vrs # IGNORE:W0122
         except:
             print "failed to execute code in instance %s for actor id=%d" % (self.instance, self.id)
             traceback.print_exc()
-        print "new v: ", vars['v']
-        if vars['v']!=targetnode.nodeValue:
-            targetnode.nodeValue = str(vars['v'])
+        print "new v: ", vrs['v']
+        if vrs['v']!=targetnode.nodeValue:
+            targetnode.nodeValue = str(vrs['v'])
             self.instance.dynCfgModified = True
