@@ -1,16 +1,3 @@
-Requirements:
-===========================
-* Required packages/libraries for all applications:
-   - python-4suite-xml
-   - python-pydot
-   - graphviz (for program dot)
-   - rrdtool
-* copy files vermont_manager.py and vermont_manager.conf to server where Vermont instance runs
-* edit content of file vermont_manager.conf
-* start Vermont Manager by calling "python vermont_manager.py <config-file>", i. e.
-  "python vermont_manager.py vermont_manager.conf" using same priviledges as Ver mont requires for execution
-
-
 Subdirectories:
 ===========================
 
@@ -18,9 +5,22 @@ Subdirectories:
 /manager: Central instance of managing system that controls several Vermont instances
 /webinterface: Webinterface for Apache mod_python that manages multiple Vermont instances and uses helper application in /manager
 
-
-How to run applications:
+Requirements:
 ===========================
+* Required packages/libraries for all applications:
+   - python-4suite-xml
+   - python-pydot
+   - graphviz (for program dot)
+   - rrdtool
+* Required packages/libraries for webinterface:
+   - apache2
+   - libapach2-mod-python
+   - python-cheetah
+
+
+How to install/run applications:
+===========================
+* call ./build_target.sh (will create subdirectory 'target' with all applications and needed files)
 * Controller:
    - go to application directory (target/controller)
    - edit vermontcontroller.conf
@@ -30,6 +30,7 @@ How to run applications:
    - edit vm.conf
    - run 'python VermontManager.py vm.conf'
 * Webinterface:
+   - install apache
    - configure apache, use sample configuration as template (target/webinterface/apache-config.sample)
       - ATTENTION: sample configuration only uses basic authentication mechanisms and DOES NOT restrict access to web application to subnets, this may need to be changed
       - all values inside @@..@@ need to be changed in configuration
