@@ -169,18 +169,22 @@ class LocalVermontInstance(VermontInstance):
         if not self.running:
             return True
 
-        os.kill(self.pid, 2)
-        for _ in range(1,15):
-            time.sleep(1)
-            pid, _ = os.waitpid(self.pid, os.WNOHANG)
-            if self.pid==pid:
-                self.pid = 0
-                return True
-        os.kill(self.pid, 9)            
-        for _ in range(1,10):
-            time.sleep(1)
-            pid, _ = os.waitpid(self.pid, os.WNOHANG)
-            if self.pid==pid:
-                self.pid = 0
-                return True
+        try:
+            os.kill(self.pid, 2)
+            for _ in range(1,15):
+                time.sleep(1)
+                pid, _ = os.waitpid(self.pid, os.WNOHANG)
+                if self.pid==pid:
+                    self.pid = 0
+                    return True
+            os.kill(self.pid, 9)            
+            for _ in range(1,10):
+                time.sleep(1)
+                pid, _ = os.waitpid(self.pid, os.WNOHANG)
+                if self.pid==pid:
+                    self.pid = 0
+                    return True
+            
+        except:
+            logger().error(traceback.format_exc())
         return False

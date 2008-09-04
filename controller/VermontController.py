@@ -97,7 +97,7 @@ class VermontController:
         self.rInterface = RemoteInterface(self.dir, self.cfgfile, self.logfile, self.vMonitor, self.names)
                 
         # RPC server
-        self.server = VCRPCServer(("", 8000), allow_none=True)
+        self.server = VCRPCServer(("", 8000), allow_none=True, logRequests=False)
         self.server.allow_reuse_address = True
         self.server.allowedIp = self.allowedIp  #IGNORE:W0201
         self.server.register_instance(self.rInterface)        

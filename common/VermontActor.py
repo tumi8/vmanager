@@ -108,7 +108,7 @@ class VermontActor:
         elif self.action=="resumemodule":
             self._changeModuleState(False)
         else:
-            raise Exception("unknown action specified for sensor: '%'" % self.action)
+            raise Exception("unknown action specified for sensor: '%s'" % self.action)
         
         
     def _performModifyValue(self):

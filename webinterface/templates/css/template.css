@@ -188,7 +188,7 @@ table.adminheading {
 table.adminheading td.normal {
 	color: #000000;
 	font-size : 12px;
-	font-weight: bold;
+	font-weight: normal;
 	text-align: left;
 }
 table.adminheading th {
@@ -464,4 +464,11 @@ table.menubar {
 table.menubar td.menubackgr {
 	background: #F1F3F5;
 	border-bottom: 1px solid #cccccc;
+}
+
+
+h2 {
+ text-align: left;
+ font-weight: bold;
+ font-size: 14px;
 }

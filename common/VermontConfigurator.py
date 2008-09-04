@@ -2,7 +2,6 @@ import traceback
 
 from VermontSensor import VermontSensor
 from VermontActor import VermontActor
-
 from VermontLogger import logger
 
 class VermontConfigurator:
@@ -58,6 +57,8 @@ class VermontConfigurator:
             threshold = s.xpath("string(threshold)")
             activation = s.xpath("string(activation)")
             if (activation!="positive") and (activation!="negative"):
+                if activation=="disabled":
+                    continue
                 raise RuntimeError("failed to parse element activation")
             for cs in self._sensors:
                 if cs.id==idnumber:
@@ -72,6 +73,8 @@ class VermontConfigurator:
         for a in actors:
             idnumber = a.xpath("string(@id)")
             action = a.xpath("string(action)")
+            if action=="disabled":
+                continue
             code = a.xpath("string(code)")
             trigger = a.xpath("string(trigger)")
             delay = a.xpath("string(delay)")

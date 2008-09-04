@@ -37,7 +37,7 @@ class RemoteVermontInstance(VermontInstance):
         VermontInstance.__init__(self, parsexml)
         self.url = url
         self.online = False
-        self._conn = xmlrpclib.ServerProxy(url, None, None, 1, 1)
+        self._conn = xmlrpclib.ServerProxy(url, None, None, 0, 1)
         self.host = re.match("http://(.*)[:/$]", url).group(1)
         self.retrieveStatus()
         if self.online:

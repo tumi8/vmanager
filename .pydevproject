@@ -7,5 +7,6 @@
 <path>/vmanager/common</path>
 <path>/vmanager/controller</path>
 <path>/vmanager/webinterface</path>
+<path>/vmanager/manager</path>
 </pydev_pathproperty>
 </pydev_project>

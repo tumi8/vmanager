@@ -3,15 +3,15 @@
 <table class="adminlist">
 <tr>
 	<th width="10%" class="title">Host:</th>
-	<td>$vi.host</td>
+	<td>$host</td>
 </tr>
 <tr>
 	<th width="10%" class="title">Configuration:</th>
 	<td rowspan="2">
 		<form action="start.py" method="post">
-			<input type="hidden" name="vi_host" value="$vi.host" />
+			<input type="hidden" name="vi_host" value="$host" />
 			<input type="hidden" name="action" value="configure" />
-			<textarea name="cfgtext" cols=100 rows="30">$vi.cfgText</textarea><br>
+			<textarea name="cfgtext" cols=100 rows="30">$cfgtext</textarea><br>
 			<input type="submit" name="Save" value="Save" />
 		</form>
 	</td>	

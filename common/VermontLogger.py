@@ -2,7 +2,6 @@
 import logging
 import sys
 
-
 __logger = None
 
 

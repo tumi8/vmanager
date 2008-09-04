@@ -1,31 +1,47 @@
 #include $workdir+"/templates/header.tmpl"
 
+
+<h2>Vermont Instance List</h2>
 <table class="adminlist">
 <tr>
 <th width="10%" class="title">Host</th>
 <th width="10%" class="title">Status</th>
 <th width="10%" class="title">Manage</th>
 </tr>
-#for $vi in $vinstances
+#for $i in range(0, len($stati))
   <tr>
-    <td>$vi.host</td>
+    <td>$hosts[$i]</td>
     <td>
-        $vi.retrieveStatus()
-        $vi.status
+        $stati[$i]
     </td>
     <td>
-#if not $vi.status.startswith("error")
-		<a href="start.py?vi_host=$vi.host&action=configure" title="Configure">Configure</a><br />
-		<a href="start.py?vi_host=$vi.host&action=sensor_data" title="Show sensor data">Sensor data</a><br />
-		<a href="start.py?vi_host=$vi.host&action=statistics" title="Show statistics">Statistics</a><br />
-		<a href="start.py?vi_host=$vi.host&action=logfile" title="Show log">Show log</a><br />
-		<a href="start.py?vi_host=$vi.host&action=reload" title="Reload">Reload</a> /
-		<a href="start.py?vi_host=$vi.host&action=start" title="Start">Start</a> /
-		<a href="start.py?vi_host=$vi.host&action=stop" title="Stop">Stop</a>
+#if not $stati[$i].startswith("error")
+		<a href="start.py?vi_host=$hosts[$i]&action=configure" title="Configure">Configure</a><br />
+		<a href="start.py?vi_host=$hosts[$i]&action=sensor_data" title="Show sensor data">Sensor data</a><br />
+		<a href="start.py?vi_host=$hosts[$i]&action=statistics" title="Show statistics">Statistics</a><br />
+		<a href="start.py?vi_host=$hosts[$i]&action=logfile" title="Show log">Show log</a><br />
+		<a href="start.py?vi_host=$hosts[$i]&action=reload" title="Reload">Reload</a> /
+		<a href="start.py?vi_host=$hosts[$i]&action=start" title="Start">Start</a> /
+		<a href="start.py?vi_host=$hosts[$i]&action=stop" title="Stop">Stop</a>
 #end if
     </td>
   </tr>
 #end for
+</table>
+
+
+<h2>Vermont Manager Configuration</h2>
+<table class="adminlist">
+    <tr><td>
+#if $dynconfenabled
+        <a href="start.py?action=disable_dynconf">Disable Dynamic Configuration</a>
+#else
+        <a href="start.py?action=enable_dynconf">Enable Dynamic Configuration</a>
+#end if
+    </td></tr>
+    <tr><td>
+        <a href="start.py?action=show_manager_log">Show Manager Log</a>
+    </td></tr>
 </table>
 
 #include $workdir+"/templates/footer.tmpl"

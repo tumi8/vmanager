@@ -92,7 +92,7 @@ class VermontInstance(object):
         """
         synchronizes both original and dynamic configuration to vermont instance
         """
-        logger().info("VermontInstance.syncConfig()")
+        logger().debug("VermontInstance.syncConfig()")
         if self.__cfgModified:
             self._transmitConfig()
             self.__cfgModified = False

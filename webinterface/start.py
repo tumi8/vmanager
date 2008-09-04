@@ -12,106 +12,118 @@ import re
 from Ft.Xml.Domlette import NonvalidatingReader
 import os
 import base64
+import xmlrpclib
+import ConfigParser
+import traceback
 
 workdir = os.path.dirname(__file__)
 sys.path.insert(0, workdir)
 
-from VermontInstanceManager import VermontInstanceManager
 
 
-def show_instance_list(req):
-    # check status of all Vermont instances
-    for i in vimanager.vermontInstances:
-        i.retrieveStatus()
-
+def show_instance_list(req, hosts):
+    try:
+        stati = remotevm.getStati()
+        dynconfenabled = remotevm.getDynconfEnabled()
+    except:
+        return show_error(req, "failed to contact manager", traceback.format_exc())
+        
     t = Template(file=tmpl_prefix + "instance_list.tmpl")
     t.workdir = workdir
-    t.title = "Vermont instances"
-    t.vinstances = vimanager.vermontInstances
+    t.title = "Vermont Manager"
+    t.hosts = hosts
+    t.stati = stati
+    t.dynconfenabled = dynconfenabled
     req.content_type = "text/html"
     req.write(str(t))
 
 
-def show_error(req, error):
+def show_error(req, error, text = ""):
     t = Template(file=tmpl_prefix + "error.tmpl")
     t.workdir = workdir
     t.title = "Error"
     t.error = error
+    t.text = text
     req.write(str(t))
 
 
-def perform_start(req, instance):
-    instance.start()
+def perform_start(req, host, hosts):
+    remotevm.start(host)
     
-    return show_instance_list(req)
+    return show_instance_list(req, hosts)
 
 
-def perform_stop(req, instance):
-    instance.stop()
+def perform_stop(req, host, hosts):
+    remotevm.stop(host)
     
-    return show_instance_list(req)
+    return show_instance_list(req, hosts)
     
 
-def perform_reload(req, instance):
-    instance.reload()
+def perform_reload(req, host, hosts):
+    remotevm.reload(host)
     
-    return show_instance_list(req)
+    return show_instance_list(req, hosts)
 
 
-def show_configure(req, instance, cfgtext = None):
-    if cfgtext is not None and cfgtext!=instance.cfgText:
+def show_configure(req, host, cfgtext = None):
+    if cfgtext is not None:
         #sys.stderr.write("cfgtext: '%s'" % cfgtext)
-        instance.setConfig(cfgtext)
-        vimanager.reparseVermontConfigs()
+        remotevm.setConfig(host, cfgtext)
+        remotevm.reparseVermontConfigs()
 
     t = Template(file=tmpl_prefix + "configure.tmpl")
-    t.title = "Configure host %s" % instance.host
-    t.vi = instance
+    t.title = "Configure host %s" % host
+    t.host = host
     t.workdir = workdir
-    t.dyncfgtext = cgi.escape(instance.dynCfgText)
+    (t.cfgtext, t.dyncfgtext) = [ cgi.escape(x) for x in remotevm.getConfigs(host) ]
     req.write(str(t))
 
 
-def show_logfile(req, instance):
+def show_logfile(req, host):
     try:
-        instance.retrieveLog()
-        log = instance.logText
+        log = remotevm.getLog(host)
     except:
-        log = "failed to read log file"
+        return show_error(req, "failed to contact manager", traceback.format_exc())     
 
     t = Template(file=tmpl_prefix + "logfile.tmpl")
-    t.title = "Log from host %s" % instance.host
+    t.title = "Log from host %s" % host
     t.log = re.compile('\n').sub('<br>\n', log)
-    t.vi = instance
+    t.host = host
     t.workdir = workdir
     req.write(str(t))
 
 
-def show_sensor_data(req, instance):
-    instance.retrieveSensorData()
-    statxml = instance.sensorDataText
-    html = Ft.Xml.Xslt.Transform(Ft.Xml.InputSource.DefaultFactory.fromString(statxml), workdir+"/sensor_output.xsl")
+def show_sensor_data(req, host):
+    try:
+        sdata = remotevm.getSensorData(host)
+    except:
+        return show_error(req, "failed to contact manager", traceback.format_exc()) 
+    html = Ft.Xml.Xslt.Transform(Ft.Xml.InputSource.DefaultFactory.fromString(sdata), workdir+"/sensor_output.xsl")
     #sys.stderr.write("
-    html = html.replace('%modulegraph_url%', "start.py?vi_host=%s&action=modulegraph" % instance.host)
+    html = html.replace('%modulegraph_url%', "start.py?vi_host=%s&action=modulegraph" % host)
 
     t = Template(file=tmpl_prefix + "sensor_data.tmpl")
-    t.title = "Statistics for host %s" % instance.host
-    t.vi = instance
+    t.title = "Statistics for host %s" % host
+    t.host = host
     t.workdir = workdir
 
     t.stat = html
-    statxml = cgi.escape(statxml)
+    statxml = cgi.escape(sdata)
     t.xml = statxml.replace("\n", "<br />\n")
     req.write(str(t))
 
 
-def show_statistics(req, instance):
+def show_statistics(req, host):
+    try:
+        names = remotevm.getGraphList(host)
+    except:
+        return show_error(req, "failed to contact manager", traceback.format_exc()) 
     t = Template(file=tmpl_prefix + "statistics.tmpl")
-    t.title = "Statistics for host %s" % instance.host
-    t.vi = instance
+    t.title = "Statistics for host %s" % host
+    t.host = host
     t.stats = []
     t.workdir = workdir
-    names = instance.getGraphList()
+    
     i = 0
     for n in names:
         t.stats.append({'name': n, 'idx': i})
@@ -121,8 +133,12 @@ def show_statistics(req, instance):
     
 
     
-def show_modulegraph(req, instance):
-    statxml = instance.sensorDataText
+def show_modulegraph(req, host):    
+    try:
+        statxml = remotevm.getSensorData(host)
+    except:
+        return show_error(req, "failed to contact manager", traceback.format_exc())
+     
     doc = NonvalidatingReader.parseString(statxml)
     g = "digraph G {\n"
     g += "\tnode[fontsize=8,shape=box,fontname=Helvetica,height=.3]\n"
@@ -136,8 +152,8 @@ def show_modulegraph(req, instance):
             g += "\t%s -> %s;\n" % (mid, nid)
 
     g += "}\n"
-    fn = "/tmp/graph-%s.dot.tmp" % instance.host
-    gfn = "/tmp/graph-%s.png.tmp" % instance.host
+    fn = "/tmp/graph-%s.dot.tmp" % host
+    gfn = "/tmp/graph-%s.png.tmp" % host
     fh = open(fn, "w")
     fh.write(g)
     fh.close()
@@ -150,56 +166,89 @@ def show_modulegraph(req, instance):
     fh.close()
 
 
-def show_statimg(req, instance, idx1, idx2):
-    png = base64.b64decode(instance.getGraph(int(idx1), int(idx2)))
+def show_statimg(req, host, idx1, idx2):
+    png = base64.b64decode(remotevm.getGraph(host, int(idx1), int(idx2)))
     req.content_type = "image/png"
     req.write(png)
+    
+    
+def show_manager_log(req):
+    try:
+        log = remotevm.getManagerLog()
+    except:
+        return show_error(req, "failed to contact manager", traceback.format_exc())     
+
+    t = Template(file=tmpl_prefix + "logfile.tmpl")
+    t.title = "Log from Vermont Manager"
+    t.log = re.compile('\n').sub('<br>\n', cgi.escape(log))
+    t.host = url
+    t.workdir = workdir
+    req.write(str(t))
+    
+    
+def set_dynconf(req, enable, hosts):
+    try:
+        remotevm.setDynconfEnabled(enable)
+    except:
+        return show_error(req, "failed to contact manager", traceback.format_exc())
+    return show_instance_list(req, hosts) 
 
 
 def index(req, action = None, vi_host = None, cfgtext = None, idx1 = None, idx2 = None):
     req.content_type = "text/html"
-    if action is None or vi_host is None:
-        return show_instance_list(req)
-
-    instance = None
-    for i in vimanager.vermontInstances:
-        if i.host==vi_host:
-            instance = i
-            break
-    if instance is None:
-        return show_error("failed to find instance %s" % vi_host)
-
-    if action=="start":
-        return perform_start(req, instance)
-    elif action=="stop":
-        return perform_stop(req, instance)
-    elif action=="reload":
-        return perform_reload(req, instance)
-    elif action=="configure":
-        return show_configure(req, instance, cfgtext)
-    elif action=="logfile":
-        return show_logfile(req, instance)
-    elif action=="sensor_data":
-        return show_sensor_data(req, instance)
-    elif action=="statistics":
-        return show_statistics(req, instance)
-    elif action=="modulegraph":
-        return show_modulegraph(req, instance)
-    elif action=="statimg":
-        if idx1 is None or idx2 is None:
-            return show_error(req, "invalid parameters")
-        else:
-            return show_statimg(req, instance, idx1, idx2)
-    else:
-        return show_error(req, "invalid parameters")
     
-    return show_instance_list(req)
+    try:
+        hosts = remotevm.getHosts()
+    except:
+        return show_error(req, "failed to contact manager", traceback.format_exc())
+    
+    if action is None:
+        return show_instance_list(req, hosts)
+    elif action=="disable_dynconf":
+        return set_dynconf(req, False, hosts)
+    elif action=="enable_dynconf":
+        return set_dynconf(req, True, hosts)
+    elif action=="show_manager_log":
+        return show_manager_log(req)
+    
+    if vi_host is not None:
+        if not vi_host in hosts:
+            return show_error("failed to find vermont host %s" % vi_host)
+    
+        if action=="start":
+            return perform_start(req, vi_host, hosts)
+        elif action=="stop":
+            return perform_stop(req, vi_host, hosts)
+        elif action=="reload":
+            return perform_reload(req, vi_host, hosts)
+        elif action=="configure":
+            return show_configure(req, vi_host, cfgtext)
+        elif action=="logfile":
+            return show_logfile(req, vi_host)
+        elif action=="sensor_data":
+            return show_sensor_data(req, vi_host)
+        elif action=="statistics":
+            return show_statistics(req, vi_host)
+        elif action=="modulegraph":
+            return show_modulegraph(req, vi_host)
+        elif action=="statimg":
+            if idx1 is None or idx2 is None:
+                return show_error(req, "invalid parameters")
+            else:
+                return show_statimg(req, vi_host, idx1, idx2)
+    return show_error(req, "invalid parameters")
 
 
 # initialize application
 cgitb.enable()
 tmpl_prefix = workdir + "/templates/"
 
-vimanager = VermontInstanceManager(workdir)
-vimanager.setup()
+# read config
+cp = ConfigParser.ConfigParser()
+cp.read("%s/vermont_web.conf" % workdir)
+sec = "Global"
+url = cp.get(sec, "VManager")
+
+
+remotevm = xmlrpclib.ServerProxy(url, None, None, 1, 1)
 
