@@ -11,6 +11,7 @@ import sys
 import xmlrpclib
 import ConfigParser
 import Ft.Xml.Xslt
+import thread
 import Ft.Xml
 import re
 from Ft.Xml.Domlette import NonvalidatingReader
@@ -23,33 +24,15 @@ sys.path.insert(0, workdir)
 from VermontInstance import VermontInstance
 
 
-def read_config():
-	cp = ConfigParser.ConfigParser()
-	cp.read(workdir+"/vermont_web.conf")
-	sec = "VermontInstances"
-	instances = []
-	i = 1
-	try:
-		while True:
-			instance = VermontInstance(cp.get(sec, "host_%d" % i))
-			instances.append(instance)
-			i += 1
-	except ConfigParser.NoOptionError:
-		pass
-	if i==1:
-		raise Exception("no valid remote Vermont instance entries in config!")
-	return instances
-
-
 def show_instance_list(req):
 	# check status of all Vermont instances
-	for i in vinstances:
+	for i in vimanager.vermontInstances:
 		i.get_status()
 
 	t = Template(file=tmpl_prefix + "instance_list.tmpl")
 	t.workdir = workdir
 	t.title = "Vermont instances"
-	t.vinstances = vinstances
+	t.vinstances = vimanager.vermontInstances
 	req.content_type = "text/html"
 	req.write(str(t))
 
@@ -186,7 +169,7 @@ def index(req, action = None, vi_host = None, cfgtext = None, idx1 = None, idx2 
 		return show_instance_list(req)
 
 	instance = None
-	for i in vinstances:
+	for i in vimanager.vermontInstances:
 		if i.host==vi_host:
 			instance = i
 			break
@@ -219,73 +202,11 @@ def index(req, action = None, vi_host = None, cfgtext = None, idx1 = None, idx2 
 	
 	return show_instance_list(req)
 
-# =======================================
-# start main processing of http request
 
+# initialize application
 cgitb.enable()
 
-# default parameters, if not given in URL
-action = "instance_list"
-vi_host = ""
-t = None
-
-
-# check parameters
-#cfgtext = None
-#cgiparams = cgi.FieldStorage()
-#apache.log_error("fieldstorage:" + str(cgiparams))
-#if cgiparams.has_key("action"):
-#	action = cgiparams.getvalue("action")
-#	apache.log_error("action: '%s'" % action)
-#if cgiparams.has_key("vi_host"):
-#	vi_host = cgiparams.getvalue("vi_host")
-#if cgiparams.has_key("cfgtext"):
-#	cfgtext = cgiparams.getvalue("cfgtext")
-#
-#
-vinstances = read_config()
+vimanager = VermontInstanceManager.VermontInstanceManager(workdir);
 tmpl_prefix = workdir + "/templates/"
-#
-## check vi_host parameter
-#if action!="instance_list": 
-#	instance = None
-#	for i in vinstances:
-#		if i.host==vi_host:
-#			instance = i
-#			break
-#
-#if t is None:
-#	if action=="instance_list":
-#		t = show_instance_list()
-#	else:
-#		if instance is None: 
-#			t = show_error("failed to find instance %s" % host)
-#
-#if t is None:
-#	if action=="start":
-#		t = perform_start(instance)
-#	elif action=="stop":
-#		t = perform_stop(instance)
-#	elif action=="reload":
-#		t = perform_reload(instance)
-#	elif action=="configure":
-#		t = show_configure(instance, cfgtext)
-#	elif action=="logfile":
-#		t = show_logfile(instance)
-#	elif action=="sensor_data":
-#		t = show_sensor_data(instance)
-#	elif action=="statistics":
-#		t = show_statistics(instance)
-#	elif action=="modulegraph":
-#		t = show_modulegraph(instance)
-#	elif action=="statimg":
-#		if not (cgiparams.has_key("idx1") and cgiparams.has_key("idx2")):
-#			t = show_error("invalid parameters")
-#		else:
-#			t = show_statimg(instance, cgiparams.getvalue("idx1"), cgiparams.getvalue("idx2"))
-#	else:
-#		t = show_error("invalid parameters")
-#	
-#if t is not None:
-#	print "Content-Type: text/html\n\n"
-#	print t
+
+thread.start_new_thread()
