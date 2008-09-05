@@ -19,7 +19,7 @@ Requirements:
 
 
 How to install/run applications:
-===========================
+======================================
 * call ./build_target.sh (will create subdirectory 'target' with all applications and needed files)
 * Controller:
    - go to application directory (target/controller)
