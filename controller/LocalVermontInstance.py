@@ -28,7 +28,10 @@ from VermontLogger import logger
 
 
 class LocalVermontInstance(VermontInstance):
-    "represents a local instance of vermont"
+    """
+    represents a local instance of vermont
+    all temporary files are stored at vermonts local directory 
+    """
 
     dir = None
     cfgfile = None
@@ -40,9 +43,10 @@ class LocalVermontInstance(VermontInstance):
     def __init__(self, directory, cfgfile, logfile, parsexml):
         VermontInstance.__init__(self, parsexml)
         self.dir = directory
-        self.cfgfile = "%s/%s" % (directory, cfgfile)
-        self.dyncfgfile = "%s/%s.dynconf" % (directory, cfgfile)
-        self.logfile = "%s/%s" % (directory, logfile)
+        self.cfgfile = cfgfile
+        
+        self.dyncfgfile = "%s.dynconf" % (cfgfile)
+        self.logfile = logfile
         self.pid = 0
 
         self.retrieveConfig()
@@ -54,14 +58,14 @@ class LocalVermontInstance(VermontInstance):
 
 
     def _retrieveConfig(self):
-        f = open(self.cfgfile)
+        f = open("%s/%s" % (self.dir, self.cfgfile))
         t = f.read()
         f.close()
         return t
     
     
     def _retrieveDynConfig(self):
-        f = open(self.dyncfgfile)
+        f = open("%s/%s" % (self.dir, self.dyncfgfile))
         t = f.read()
         f.close()
         return t
@@ -75,14 +79,14 @@ class LocalVermontInstance(VermontInstance):
             
             
     def _transmitConfig(self):
-        f = open(self.cfgfile, "w")
+        f = open("%s/%s" % (self.dir, self.cfgfile), "w")
         f.write(self.cfgText)
         f.close()
         self.cfgModified = False            
             
             
     def _transmitDynConfig(self):
-        f = open(self.dyncfgfile, "w")
+        f = open("%s/%s" % (self.dir, self.dyncfgfile), "w")
         f.write(self.dynCfgText)
         f.write("\n")
         f.close()
@@ -90,7 +94,7 @@ class LocalVermontInstance(VermontInstance):
         
         
     def retrieveLog(self):
-        f = open(self.logfile)
+        f = open("%s/%s" % (self.dir, self.logfile))
         self.logText = f.read()
         f.close()
         
@@ -129,7 +133,7 @@ class LocalVermontInstance(VermontInstance):
         if self.running:
             return
         
-        cmdline = [ "./vermont", "-f", self.dyncfgfile, "-d" ] 
+        cmdline = [ "vermont", "-f", self.dyncfgfile, "-d" ] 
         logger().info("Vermont args: %s" % cmdline)
         logger().info("Truncating log file %s" % self.logfile)
         f = os.open(self.logfile, os.O_CREAT|os.O_TRUNC)
