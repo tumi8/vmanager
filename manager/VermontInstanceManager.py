@@ -54,6 +54,8 @@ class VermontInstanceManager(VMInterface, object):
     @ivar _allowedIP
     @ivar _server
     @ivar __dynconfEnabled
+    @ivar _bindAddress
+    @ivar _listenPort
     """
     
     def __init__(self, cfgfile):
@@ -80,6 +82,8 @@ class VermontInstanceManager(VMInterface, object):
         self._checkInterval = cp.getint(sec, "Interval")
         self._logFile = cp.get(sec, "Logfile")
         self._allowedIP = cp.get(sec, "AllowedWebIP")
+        self._bindAddress = cp.get(sec, "BindAddress")
+        self._listenPort = cp.get(sec, "ListenPort")
         
         sec = "VermontInstances"
         self.vermontInstances = []
@@ -103,7 +107,7 @@ class VermontInstanceManager(VMInterface, object):
         logger().debug("VermontInstanceManager.setup()")
         self._startConfigThread()
         # RPC server
-        self._server = VMRPCServer(("", 8001), allow_none=True, logRequests=False)
+        self._server = VMRPCServer((self._bindAddress, self._listenPort), allow_none=True, logRequests=False)
         self._server.allow_reuse_address = True
         self._server.allowedIp = self._allowedIP # IGNORE:W0201
         self._server.register_instance(self)        

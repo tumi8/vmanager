@@ -62,6 +62,8 @@ class VermontController:
     @ivar rInterface
     @ivar vMonitor
     @ivar controllerlogfile
+    @ivar bindAddress
+    @ivar listenPort
     """
     
     def __init__(self, configfile):
@@ -95,6 +97,8 @@ class VermontController:
         self.logfile = cp.get("Global", "VermontLogFile")
         self.moninterval = int(cp.get("Stats", "Interval"))
         self.allowedIp = cp.get("Global", "AllowedManagerIP")
+        self.bindAddress = cp.get("Global", "BindAddress")
+        self.listenPort = cp.get("Global", "ListenPort")
         logger().info("Using interval %s" % self.moninterval)
         i = 1
         self.xpaths = []
@@ -114,7 +118,7 @@ class VermontController:
         self.rInterface = RemoteInterface(self.dir, self.cfgfile, self.logfile, self.vMonitor, self.names)
                 
         # RPC server
-        self.server = VCRPCServer(("", 8000), allow_none=True, logRequests=False)
+        self.server = VCRPCServer((self.bindAddress, self.listenPort), allow_none=True, logRequests=False)
         self.server.allow_reuse_address = True
         self.server.allowedIp = self.allowedIp  #IGNORE:W0201
         self.server.register_instance(self.rInterface)        
