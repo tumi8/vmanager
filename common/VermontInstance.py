@@ -1,4 +1,4 @@
-# Vermont Manager
+# Vermont Management Infrastructure
 # Copyright (C) 2008 University of Erlangen, Staff of Informatik 7 <limmer@cs.fau.de>
 #
 # This program is free software; you can redistribute it and/or

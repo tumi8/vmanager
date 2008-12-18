@@ -57,7 +57,7 @@ class RemoteVermontInstance(VermontInstance):
         except Exception ,e: #IGNORE:W0703
             self.online = False
             self.running = False
-            self.status = "error: manager not found on host (%s)" % e
+            self.status = "error: controller not found on host (%s)" % e
     
 
     def _retrieveConfig(self):
