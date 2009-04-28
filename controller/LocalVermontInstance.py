@@ -134,9 +134,10 @@ class LocalVermontInstance(VermontInstance):
             return
         
         cmdline = [ "vermont", "-f", self.dyncfgfile, "-d" ] 
+	logfile = "%s/%s" % (self.dir, self.logfile)
         logger().info("Vermont args: %s" % cmdline)
-        logger().info("Truncating log file %s" % self.logfile)
-        f = os.open(self.logfile, os.O_CREAT|os.O_TRUNC)
+        logger().info("Truncating log file %s" % logfile)
+        f = os.open(logfile, os.O_CREAT|os.O_TRUNC)
         os.close(f)
         
         pid = os.fork()
@@ -145,7 +146,7 @@ class LocalVermontInstance(VermontInstance):
             if (maxfd == resource.RLIM_INFINITY):
                 maxfd = os.sysconf('SC_OPEN_MAX')
 
-            REDIRECT_TO = self.logfile
+            REDIRECT_TO = logfile
             # Iterate through and close all file descriptors.
             for fd in range(0, maxfd):
                 try:
