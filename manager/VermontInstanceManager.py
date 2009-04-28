@@ -83,7 +83,7 @@ class VermontInstanceManager(VMInterface, object):
         self._logFile = cp.get(sec, "Logfile")
         self._allowedIP = cp.get(sec, "AllowedWebIP")
         self._bindAddress = cp.get(sec, "BindAddress")
-        self._listenPort = cp.get(sec, "ListenPort")
+        self._listenPort = int(cp.get(sec, "ListenPort"))
         
         sec = "VermontInstances"
         self.vermontInstances = []

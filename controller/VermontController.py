@@ -98,7 +98,7 @@ class VermontController:
         self.moninterval = int(cp.get("Stats", "Interval"))
         self.allowedIp = cp.get("Global", "AllowedManagerIP")
         self.bindAddress = cp.get("Global", "BindAddress")
-        self.listenPort = cp.get("Global", "ListenPort")
+        self.listenPort = int(cp.get("Global", "ListenPort"))
         logger().info("Using interval %s" % self.moninterval)
         i = 1
         self.xpaths = []
