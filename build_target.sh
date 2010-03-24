@@ -6,3 +6,4 @@ cp common/* target/controller
 cp -r manager target/
 cp common/* target/manager
 cp -r webinterface target/
+cp -r scripts target/
