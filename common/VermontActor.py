@@ -21,7 +21,7 @@ import time
 import traceback
 from VermontLogger import logger
 
-class VermontActor:
+class VermontActor: 
     """
     @ivar instance: corresponding VermontInstance
     @ivar action:
@@ -91,7 +91,7 @@ class VermontActor:
             self._delayedTriggerTime = time.time()
             
         elif activate:
-            if (time.time()-self._delayedTriggerTime>=self.delay) and not self._onceTriggered:
+            if (int(time.time())-int(self._delayedTriggerTime)>=int(self.delay)) and not self._onceTriggered:
                 self._onceTriggered = True
                 self._performAction()
             self._delayedTriggerTime = time.time()
@@ -110,9 +110,9 @@ class VermontActor:
         if activate and self._delayedTriggerTime is None:
             self._delayedTriggerTime = time.time()
         elif activate:
-            if time.time()-self._delayedTriggerTime>=self.delay:
-                self._delayedTriggerTime = time.time()
-                self._performAction()
+			if int(time.time())-int(self._delayedTriggerTime)>=int(self.delay):
+				self._delayedTriggerTime = time.time()
+				self._performAction()
         elif not activate and self._delayedTriggerTime is not None:
             self._delayedTriggerTime = None
             

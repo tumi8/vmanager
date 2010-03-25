@@ -139,8 +139,8 @@ class VermontController:
                 xml = None
                 trycount = 0
                 while xml is None:
-                    if trycount>=5:
-                        raise RuntimeError("Failed to read sensor data!")
+                    #if trycount>=100:
+                        #raise RuntimeError("Failed to read sensor data!")
                     try:
                         logger().debug("trying to read sensor data ...")
                         self.rInterface.retrieveSensorData()
