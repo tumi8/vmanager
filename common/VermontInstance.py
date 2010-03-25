@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+import traceback
 from StringIO import StringIO
 from Ft.Xml.Domlette import NonvalidatingReader
 from Ft.Xml.Domlette import Print
@@ -62,8 +62,11 @@ class VermontInstance(object):
         both original and dynamic
         """
         logger().debug("VermontInstance.retrieveConfig()")
-        self.setConfig(self._retrieveConfig())
-        self.__cfgModified = False
+	try:
+		self.setConfig(self._retrieveConfig())
+		self.__cfgModified = False
+	except:
+		logger().error(traceback.format_exc())
 
 
     def setConfig(self, text):
@@ -168,10 +171,12 @@ class VermontInstance(object):
 
 
     def getCfgText(self):
+        if self.__cfgText == "": self.retrieveConfig()
         return self.__cfgText
 
 
     def getDynCfgText(self):
+        if self.__cfgText == "": self.retrieveConfig()
         return self.__dynCfgText
 
 
