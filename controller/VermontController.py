@@ -94,7 +94,11 @@ class VermontController:
         self.dir = cp.get("Global", "VermontDir")
         self.cfgfile = cp.get("Global", "ConfigFile")
         self.controllerlogfile = cp.get("Global", "ControllerLogFile")
+        #self.controllerlogfile = cp.get("Global", "/var/log/monkit/vcontroller.log")
         self.logfile = cp.get("Global", "VermontLogFile")
+        if self.logfile.startswith("/"):
+            __cwd = os.getcwd() + self.dir
+            self.logfile = os.path.relpath(self.logfile, __cwd)
         self.moninterval = int(cp.get("Stats", "Interval"))
         self.allowedIp = cp.get("Global", "AllowedManagerIP")
         self.bindAddress = cp.get("Global", "BindAddress")
