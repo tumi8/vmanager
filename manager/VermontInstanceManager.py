@@ -65,7 +65,7 @@ class VermontInstanceManager(VMInterface, object):
         self._logFile = None
         self._server = None
         self._allowedIP = ""
-        self.__dynconfEnabled = True
+        self.__dynconfEnabled = False
         self._workerRunning = False
         if cfgfile is not None:
             VermontLogger.init("vmanager", "", True)
@@ -84,6 +84,11 @@ class VermontInstanceManager(VMInterface, object):
         self._allowedIP = cp.get(sec, "AllowedWebIP")
         self._bindAddress = cp.get(sec, "BindAddress")
         self._listenPort = int(cp.get(sec, "ListenPort"))
+        if cp.has_option(sec, "EnableDynamicConf"):
+            if int(cp.get(sec, "EnableDynamicConf"))==0:
+                self.__dynconfEnabled = False
+            else:
+                self.__dynconfEnabled = True
         
         sec = "VermontInstances"
         self.vermontInstances = []
