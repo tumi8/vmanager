@@ -29,7 +29,7 @@ class RRDVermontMonitor:
     interval = None
     # record every 10  60  3600 seconds a value in rrd (multiplied by "step" size -s)
     rrdintervals = (2, 12, 720)
-    rrdgraphhist = (120, 1440, 10080)
+    rrdgraphhist = (120, 1440, 43200)
 
     def __init__(self, xpaths, names, interval):
         self.xpaths = xpaths

@@ -88,5 +88,8 @@
 <xsl:template match="addInfo/createdInstances">
 	<tr class="addinfotable"><td class="addinfotable">created instances:</td><td class="addinfotable"><xsl:value-of select="." /></td></tr>
 </xsl:template>
+<xsl:template match="addInfo/hashtable">
+    <tr class="addinfotable"><td class="addinfotable">hashtable entries:</td><td class="addinfotable"><xsl:value-of select="sum(entries)" /></td></tr>
+</xsl:template>
 
 </xsl:stylesheet>
