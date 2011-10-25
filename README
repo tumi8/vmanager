@@ -14,7 +14,7 @@ Requirements:
    - rrdtool
 * Required packages/libraries for webinterface:
    - apache2
-   - libapach2-mod-python
+   - libapache2-mod-python
    - python-cheetah
 
 
